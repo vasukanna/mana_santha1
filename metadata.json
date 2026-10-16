@@ -1,0 +1,6 @@
+{
+  "name": "SanthaKart",
+  "description": "Mana Santha - Andhra Pradesh's premier online agricultural and local rural marketplace for farmers, traders, livestock owners, and buyers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
