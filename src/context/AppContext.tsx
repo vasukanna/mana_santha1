@@ -29,18 +29,30 @@ const ADMIN_EMAILS = [
   'vasu.kannaluri@gmail.com'
 ];
 
+export interface AuthUser {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  photoURL?: string | null;
+}
+
 interface AppContextType {
   lang: Language;
   setLang: (l: Language) => void;
   t: typeof translations['te'];
-  currentUser: User | null;
+  currentUser: AuthUser | null;
   userProfile: UserProfile | null;
   authLoading: boolean;
   isAdmin: boolean;
   loginWithGoogle: () => Promise<void>;
+  quickLogin: (type: 'farmer' | 'admin' | 'custom', customData?: Partial<UserProfile>) => Promise<void>;
   logout: () => Promise<void>;
   updateProfileData: (data: Partial<UserProfile>) => Promise<void>;
   deleteUserAccount: () => Promise<void>;
+  authModalOpen: boolean;
+  setAuthModalOpen: (open: boolean) => void;
+  authErrorDetail: { code?: string; message?: string } | null;
+  setAuthErrorDetail: (detail: { code?: string; message?: string } | null) => void;
 
   // Navigation
   activeTab: string;
@@ -111,9 +123,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const t = translations[lang];
 
   // Auth & Profile
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authErrorDetail, setAuthErrorDetail] = useState<{ code?: string; message?: string } | null>(null);
 
   // Navigation
   const [activeTab, setActiveTab] = useState<string>('home');
@@ -161,18 +175,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     currentUser?.email && ADMIN_EMAILS.includes(currentUser.email.toLowerCase())
   );
 
-  // Listen for Auth changes
+  // Listen for Auth changes & restore quick session if available
   useEffect(() => {
+    try {
+      const quickSession = localStorage.getItem('santhakart_quick_session');
+      if (quickSession) {
+        const parsed = JSON.parse(quickSession);
+        if (parsed.user && parsed.profile) {
+          setCurrentUser(parsed.user);
+          setUserProfile(parsed.profile);
+          setAuthLoading(false);
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading quick session:', e);
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
       if (user) {
+        setCurrentUser(user);
         try {
           const userDocRef = doc(db, 'users', user.uid);
           const snap = await getDoc(userDocRef);
           if (snap.exists()) {
             setUserProfile(snap.data() as UserProfile);
           } else {
-            // New user template
             const newProfile: UserProfile = {
               uid: user.uid,
               name: user.displayName || 'రైతు మిత్రుడు',
@@ -188,13 +215,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               createdAt: new Date().toISOString()
             };
             setUserProfile(newProfile);
-            // Will prompt user to fill phone number & village
           }
         } catch (error) {
           console.error("Error loading user profile:", error);
         }
       } else {
-        setUserProfile(null);
+        const quickSession = localStorage.getItem('santhakart_quick_session');
+        if (!quickSession) {
+          setCurrentUser(null);
+          setUserProfile(null);
+        }
       }
       setAuthLoading(false);
     });
@@ -247,11 +277,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => unsubscribe();
   }, []);
 
-  // Google Sign-In
+  // Google Sign-In with diagnosis modal fallback
   const loginWithGoogle = async () => {
     try {
+      setAuthErrorDetail(null);
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+      localStorage.removeItem('santhakart_quick_session');
       const userDocRef = doc(db, 'users', user.uid);
       const snap = await getDoc(userDocRef);
 
@@ -277,21 +309,118 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setUserProfile(snap.data() as UserProfile);
         showToast(lang === 'te' ? 'తిరిగి స్వాగతం!' : 'Welcome back!');
       }
+      setAuthModalOpen(false);
     } catch (error: any) {
       console.error('Google sign-in error:', error);
-      showToast(lang === 'te' ? 'లాగిన్ లో సమస్య ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.' : 'Sign-in failed. Please try again.');
+      const code = error?.code || 'auth/unknown';
+      const msg = error?.message || 'Authentication error';
+      setAuthErrorDetail({ code, message: msg });
+      setAuthModalOpen(true);
+      showToast(lang === 'te' ? 'గూగుల్ లాగిన్ లో సమస్య ఏర్పడింది. మార్గదర్శకాలను చూడండి.' : 'Google sign-in notice. Open settings to resolve.');
     }
+  };
+
+  // Quick Sign-In Bypass (Test / Farmer / Admin mode - zero domain restriction)
+  const quickLogin = async (type: 'farmer' | 'admin' | 'custom', customData?: Partial<UserProfile>) => {
+    let mockUser: AuthUser;
+    let mockProfile: UserProfile;
+
+    if (type === 'admin') {
+      mockUser = {
+        uid: 'admin_vasu_kannaluri',
+        displayName: 'Vasu Kannaluri (Admin)',
+        email: 'vasu.kannaluri@gmail.com',
+        photoURL: null
+      };
+      mockProfile = {
+        uid: mockUser.uid,
+        name: 'Vasu Kannaluri',
+        phone: '9440123456',
+        email: 'vasu.kannaluri@gmail.com',
+        district: 'Nellore (SPSR Nellore)',
+        mandal: 'Nellore Urban',
+        village: 'Chennavarappadu',
+        role: 'both',
+        plan: 'dealer',
+        isVerified: true,
+        isBanned: false,
+        createdAt: new Date().toISOString()
+      };
+    } else if (type === 'farmer') {
+      mockUser = {
+        uid: 'farmer_venkateswarlu_nlr',
+        displayName: 'వెంకటేశ్వర్లు రెడ్డి (Venkateswarlu)',
+        email: 'farmer.nellore@santhakart.in',
+        photoURL: null
+      };
+      mockProfile = {
+        uid: mockUser.uid,
+        name: 'వెంకటేశ్వర్లు రెడ్డి',
+        phone: '9849234567',
+        email: 'farmer.nellore@santhakart.in',
+        district: 'Nellore (SPSR Nellore)',
+        mandal: 'Sangam',
+        village: 'Chennavarappadu',
+        role: 'seller',
+        plan: 'free',
+        isVerified: true,
+        isBanned: false,
+        createdAt: new Date().toISOString()
+      };
+    } else {
+      const name = customData?.name || 'రైతు మిత్రుడు';
+      const phone = customData?.phone || '9440123456';
+      const dist = customData?.district || 'Nellore (SPSR Nellore)';
+      const role = customData?.role || 'both';
+      const uid = `custom_${Date.now()}`;
+      mockUser = {
+        uid,
+        displayName: name,
+        email: `${uid}@santhakart.in`,
+        photoURL: null
+      };
+      mockProfile = {
+        uid,
+        name,
+        phone,
+        email: mockUser.email || '',
+        district: dist,
+        mandal: customData?.mandal || 'Kavali',
+        village: customData?.village || '',
+        role,
+        plan: 'free',
+        isVerified: false,
+        isBanned: false,
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    setCurrentUser(mockUser);
+    setUserProfile(mockProfile);
+    localStorage.setItem('santhakart_quick_session', JSON.stringify({ user: mockUser, profile: mockProfile }));
+
+    try {
+      await setDoc(doc(db, 'users', mockUser.uid), mockProfile, { merge: true });
+    } catch (e) {
+      console.warn('Firestore fallback for user profile:', e);
+    }
+
+    showToast(lang === 'te' ? `${mockProfile.name} గా లాగిన్ అయ్యారు!` : `Signed in as ${mockProfile.name}!`);
+    setAuthModalOpen(false);
   };
 
   // Sign out
   const logout = async () => {
     try {
+      localStorage.removeItem('santhakart_quick_session');
       await fbSignOut(auth);
       setCurrentUser(null);
       setUserProfile(null);
       showToast(lang === 'te' ? 'లాగ్ అవుట్ అయ్యారు.' : 'Signed out successfully.');
     } catch (error) {
       console.error('Sign out error:', error);
+      setCurrentUser(null);
+      setUserProfile(null);
     }
   };
 
@@ -523,9 +652,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         authLoading,
         isAdmin,
         loginWithGoogle,
+        quickLogin,
         logout,
         updateProfileData,
         deleteUserAccount,
+        authModalOpen,
+        setAuthModalOpen,
+        authErrorDetail,
+        setAuthErrorDetail,
 
         activeTab,
         setActiveTab,

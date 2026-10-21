@@ -137,7 +137,7 @@ export const INITIAL_LISTINGS: Listing[] = [
     sellerId: "seed_seller_03",
     sellerName: "శంకర్ నాయుడు (Shankar Naidu)",
     sellerPhone: "9989345123",
-    category: "vegetables",
+    category: "fruits_vegetables",
     subcategory: "tomato",
     title: "మదనపల్లె హైబ్రిడ్ నాణ్యమైన టమోటా (Fresh Madanapalle Tomatoes)",
     description: "మదనపల్లె మార్కెట్ నాణ్యత కలిగిన సాహో వెరైటీ టమోటా క్రేట్లు. రోజూ 60 క్రేట్లు కోత కోస్తున్నాము. హైదరాబాద్, చెన్నై హోల్‌సేల్ వ్యాపారులకు నేరుగా లారీ లోడ్ ఇవ్వబడును.",
@@ -226,7 +226,7 @@ export const INITIAL_LISTINGS: Listing[] = [
     sellerId: "seed_seller_06",
     sellerName: "సుబ్బారెడ్డి (Subbareddy)",
     sellerPhone: "9848567890",
-    category: "fruits",
+    category: "fruits_vegetables",
     subcategory: "citrus",
     title: "పులివెందుల తీపి బత్తాయి తోట (Pulivendula Sweet Citrus Orchard)",
     description: "5 ఎకరాల విస్తీర్ణంలో ఉన్న బత్తాయి తోట కాపు వేలం లేదా టన్నుల చొప్పున విక్రయించబడును. కాయ నాణ్యమైన సైజు, రంగు మరియు తియ్యటి రసంతో ఉన్నది.",
@@ -308,6 +308,125 @@ export const INITIAL_LISTINGS: Listing[] = [
       harvestReadiness: "ready"
     },
     createdAt: new Date(Date.now() - 3600000 * 50).toISOString(),
+    viewsCount: 95,
+    callsCount: 16,
+    whatsappCount: 10
+  },
+  {
+    id: "init_gtr_chilli_09",
+    sellerId: "seed_seller_09",
+    sellerName: "సాంబశివరావు (Sambasiva Rao)",
+    sellerPhone: "9848299101",
+    category: "commercial_crops",
+    subcategory: "chilli",
+    title: "గుంటూరు మేలురకం తేజ ఎండిన మిర్చి (Guntur Teja Dry Chilli)",
+    description: "గుంటూరు మిర్చి యార్డ్ క్వాలిటీ తేజ ఎండిన ఎర్ర మిర్చి. మంచి ఘాటు మరియు నిగారింపు గల రంగు. కోల్డ్ స్టోరేజ్ నిల్వ, తేమ శాతం తక్కువ. మసాలా కంపెనీలకు మరియు ఎగుమతిదారులకు 100 బస్తాలు సిద్ధంగా ఉన్నాయి.",
+    price: 19500,
+    negotiable: true,
+    quantity: "100 బస్తాలు (క్వింటాకు ₹19,500)",
+    images: [
+      "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&w=1200&q=80"
+    ],
+    district: "Guntur",
+    mandal: "Tenali",
+    village: "Angalakuduru",
+    status: "active",
+    featured: true,
+    customFields: {
+      variety: "తేజ (Teja Deluxe)",
+      colorGrade: "deluxe",
+      quantityAvailable: "100 బస్తాలు"
+    },
+    createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
+    viewsCount: 245,
+    callsCount: 38,
+    whatsappCount: 22
+  },
+  {
+    id: "init_nlr_vermi_10",
+    sellerId: "seed_seller_10",
+    sellerName: "గోవర్ధన్ రెడ్డి (Govardhan Reddy)",
+    sellerPhone: "9440812340",
+    category: "inputs",
+    subcategory: "organic_manure",
+    title: "సేంద్రీయ వర్మీ కంపోస్ట్ & పశువుల ఎరువు (Pure Organic Vermicompost)",
+    description: "మా డెయిరీ ఫామ్ వ్యర్థాలతో తయారుచేసిన స్వచ్ఛమైన వానపాముల ఎరువు (వర్మీ కంపోస్ట్). నత్రజని, భాస్వరం సమృద్ధిగా ఉన్న పౌడర్ రూపం. బస్తాకు 50 కేజీలు. తోటలకు, నర్సరీలకు మరియు కూరగాయల సాగుకు బెస్ట్ రిజల్ట్.",
+    price: 350,
+    negotiable: true,
+    quantity: "50 కేజీల బస్తా (₹350)",
+    images: [
+      "https://images.unsplash.com/photo-1585336261026-6b71bc989d38?auto=format&fit=crop&w=1200&q=80"
+    ],
+    district: "Nellore (SPSR Nellore)",
+    mandal: "Buchireddypalem",
+    village: "Damaramadugu",
+    status: "active",
+    featured: false,
+    customFields: {
+      brand: "సంతకార్ట్ ఆర్గానిక్స్",
+      billAvailable: "farmer_direct"
+    },
+    createdAt: new Date(Date.now() - 3600000 * 14).toISOString(),
+    viewsCount: 130,
+    callsCount: 18,
+    whatsappCount: 12
+  },
+  {
+    id: "init_nlr_pump_11",
+    sellerId: "seed_seller_11",
+    sellerName: "రమణయ్య (Ramanaiah)",
+    sellerPhone: "9440556677",
+    category: "irrigation",
+    subcategory: "submersible_pumps",
+    title: "టెక్స్‌మో 7.5 HP బోరుబావి మోటార్ & కేబుల్ (Texmo 7.5 HP Submersible Pump)",
+    description: "నెల్లూరు జిల్లాలో 350 అడుగుల బోరుకు వాడిన మేలైన టెక్స్‌మో 7.5 HP 15-స్టేజ్ సబ్మర్సిబుల్ పంపుసెట్. మంచి ప్రెజర్, రాగి వైండింగ్, స్టార్టర్ బాక్స్ మరియు 200 అడుగుల Finolex కేబుల్ తో సహా లభించును.",
+    price: 28500,
+    negotiable: true,
+    quantity: "1 సెట్",
+    images: [
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80"
+    ],
+    district: "Nellore (SPSR Nellore)",
+    mandal: "Allur",
+    village: "Allur",
+    status: "active",
+    featured: false,
+    customFields: {
+      equipmentType: "7.5 HP 15-Stage Submersible",
+      motorHp: "7.5 HP",
+      brand: "Texmo"
+    },
+    createdAt: new Date(Date.now() - 3600000 * 20).toISOString(),
+    viewsCount: 110,
+    callsCount: 14,
+    whatsappCount: 8
+  },
+  {
+    id: "init_bpt_straw_12",
+    sellerId: "seed_seller_12",
+    sellerName: "కోటేశ్వరరావు (Koteswara Rao)",
+    sellerPhone: "9848778899",
+    category: "fodder",
+    subcategory: "dry_straw",
+    title: "బాపట్ల వరి ఎండుగడ్డి వాములు (Dry Paddy Straw - Tractor Loads)",
+    description: "వర్షం తగలని మేలురకం BPT వరి ఎండుగడ్డి. పాడి ఆవులు మరియు గేదెలకు అత్యంత బలవర్ధకమైన మేత. మొత్తం 6 ట్రాక్టర్ లోడ్ల గడ్డి అందుబాటులో ఉంది. నేరుగా కల్లం దగ్గర లోడింగ్ చేసి ఇవ్వబడును.",
+    price: 3200,
+    negotiable: true,
+    quantity: "ట్రాక్టర్ లోడ్‌కు ₹3,200",
+    images: [
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80"
+    ],
+    district: "Bapatla",
+    mandal: "Karlapalem",
+    village: "Karlapalem",
+    status: "active",
+    featured: false,
+    customFields: {
+      fodderType: "వరి ఎండుగడ్డి (Paddy Straw)",
+      quantityAvailable: "6 ట్రాక్టర్ లోడ్లు",
+      deliveryAvailable: "buyer_pickup"
+    },
+    createdAt: new Date(Date.now() - 3600000 * 26).toISOString(),
     viewsCount: 95,
     callsCount: 16,
     whatsappCount: 10

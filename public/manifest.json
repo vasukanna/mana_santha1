@@ -1,0 +1,22 @@
+{
+  "short_name": "SanthaKart",
+  "name": "SanthaKart - Mana Santha | మన సంత మార్కెట్",
+  "description": "Andhra Pradesh's premier online agricultural and local rural marketplace for farmers, traders, livestock owners, and buyers.",
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#ea580c",
+  "display": "standalone",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

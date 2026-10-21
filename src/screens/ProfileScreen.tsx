@@ -30,7 +30,8 @@ export const ProfileScreen: React.FC = () => {
     isAdmin,
     setActiveTab,
     appConfig,
-    showToast
+    showToast,
+    setAuthModalOpen
   } = useApp();
 
   const [name, setName] = useState(userProfile?.name || currentUser?.displayName || '');
@@ -96,15 +97,25 @@ export const ProfileScreen: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={loginWithGoogle}
-          className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-            <path d="M12.24 10.285V13.8h6.887C18.2 16.5 15.64 18.5 12.24 18.5c-3.59 0-6.5-2.91-6.5-6.5s2.91-6.5 6.5-6.5c1.61 0 3.09.59 4.23 1.57l2.6-2.6C17.45 2.87 15.01 2 12.24 2 6.58 2 2 6.58 2 12.25s4.58 10.25 10.24 10.25c6.04 0 10.03-4.25 10.03-10.21 0-.69-.07-1.35-.19-2.005H12.24z"/>
-          </svg>
-          <span>{t.googleSignIn}</span>
-        </button>
+        <div className="space-y-2">
+          <button
+            onClick={loginWithGoogle}
+            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+              <path d="M12.24 10.285V13.8h6.887C18.2 16.5 15.64 18.5 12.24 18.5c-3.59 0-6.5-2.91-6.5-6.5s2.91-6.5 6.5-6.5c1.61 0 3.09.59 4.23 1.57l2.6-2.6C17.45 2.87 15.01 2 12.24 2 6.58 2 2 6.58 2 12.25s4.58 10.25 10.24 10.25c6.04 0 10.03-4.25 10.03-10.21 0-.69-.07-1.35-.19-2.005H12.24z"/>
+            </svg>
+            <span>{t.googleSignIn}</span>
+          </button>
+
+          <button
+            onClick={() => setAuthModalOpen(true)}
+            className="w-full bg-white hover:bg-stone-50 border border-stone-300 text-stone-700 font-bold text-xs py-3 px-4 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+          >
+            <Sparkles className="w-4 h-4 text-orange-600" />
+            <span>{lang === 'te' ? 'తక్షణ ప్రవేశం / డొమైన్ సహాయం (Quick Login / Help)' : 'Instant Quick Login / Domain Help'}</span>
+          </button>
+        </div>
       </div>
     );
   }

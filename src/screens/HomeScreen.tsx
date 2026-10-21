@@ -56,8 +56,14 @@ export const HomeScreen: React.FC = () => {
         }
 
         // Category filter
-        if (selectedCategory && listing.category !== selectedCategory) {
-          return false;
+        if (selectedCategory) {
+          if (selectedCategory === 'fruits_vegetables') {
+            if (listing.category !== 'fruits_vegetables' && listing.category !== 'fruits' && listing.category !== 'vegetables') {
+              return false;
+            }
+          } else if (listing.category !== selectedCategory) {
+            return false;
+          }
         }
 
         // Verified seller filter
@@ -105,38 +111,47 @@ export const HomeScreen: React.FC = () => {
     <div className="pb-24 pt-1">
       <div className="max-w-5xl mx-auto px-3 sm:px-4 space-y-4">
         
-        {/* BIG HERO BRAND BANNER - ATTRACTIVE & CLEAN */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-3xl p-5 sm:p-7 text-white shadow-lg shadow-orange-500/20 border border-orange-400/40">
-          {/* Subtle background decorative shapes */}
+        {/* BIG HERO BRAND BANNER - MATCHING IMAGE 2 WITH LOGO & TAGLINE */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 rounded-3xl p-5 sm:p-6 text-white shadow-lg shadow-orange-500/25 border border-orange-400/40">
+          {/* Subtle background glow */}
           <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -left-10 -top-10 w-36 h-36 bg-amber-300/20 rounded-full blur-xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4 text-center sm:text-left">
-            {/* Big Brand Logo Emblem */}
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <BrandLogo size="lg" showTagline={false} lang={lang} isLight={true} />
-              <div className="sm:border-l sm:border-white/25 sm:pl-4">
-                <div className="inline-block bg-white/20 backdrop-blur-xs text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full mb-1">
-                  {lang === 'te' ? 'ఆంధ్రప్రదేశ్ ప్రత్యక్ష గ్రామీణ సంత' : "Andhra Pradesh's Premier Agri Market"}
-                </div>
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-snug">
-                  {lang === 'te' ? 'మన సంతలో కొనండి • అమ్మండి' : 'Trade Directly at Mana Santha'}
-                </h1>
-                <p className="text-xs text-orange-100 font-medium max-w-md mt-0.5">
-                  {lang === 'te'
-                    ? 'నెల్లూరు (సంగం, కోవూరు), చిత్తూరు, తిరుపతి, కడప, ఒంగోలు, బాపట్ల, అనంతపురం రైతులు & వ్యాపారుల వేదిక.'
-                    : 'Livestock, paddy, aqua, vegetables & machinery across Nellore, Chittoor, Kadapa & AP.'}
-                </p>
-              </div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-5 text-center md:text-left">
+            {/* Left Brand Badge with Official Logo and Tagline */}
+            <div className="flex items-center gap-3.5 shrink-0">
+              <BrandLogo size="lg" showTagline={true} lang={lang} isLight={true} />
             </div>
 
-            {/* Post Ad Quick Button */}
+            {/* Vertical Divider */}
+            <div className="hidden md:block w-px h-16 bg-white/30 shrink-0" />
+
+            {/* Center Content */}
+            <div className="flex-1 space-y-1">
+              <div className="inline-block bg-white/20 backdrop-blur-xs text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full mb-0.5 shadow-xs">
+                {lang === 'te' ? 'ఆంధ్రప్రదేశ్ నంబర్ 1 అగ్రి మార్కెట్' : "ANDHRA PRADESH'S PREMIER AGRI MARKET"}
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug">
+                {lang === 'te' ? 'మన సంతలో నేరుగా వర్తకం చేయండి' : 'Trade Directly at Mana Santha'}
+              </h1>
+              <p className="text-xs text-orange-100 font-medium max-w-xl leading-relaxed">
+                {lang === 'te'
+                  ? 'నెల్లూరు, చిత్తూరు, కడప & ఆంధ్రప్రదేశ్ వ్యాప్తంగా పశువులు, ధాన్యం, ఆక్వా, కూరగాయలు & యంత్రాలు.'
+                  : 'Livestock, paddy, aqua, vegetables & machinery across Nellore, Chittoor, Kadapa & AP.'}
+              </p>
+            </div>
+
+            {/* Right Action Button: Exact (+ inside circle) + Post Ad */}
             <button
               onClick={() => setActiveTab('sell')}
-              className="bg-white hover:bg-orange-50 text-orange-700 font-black text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-lg active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer border border-white"
+              className="bg-white hover:bg-orange-50 text-orange-600 font-extrabold text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-xl active:scale-95 transition-all flex items-center gap-2.5 shrink-0 cursor-pointer border-2 border-white group"
             >
-              <PlusCircle className="w-5 h-5 text-orange-600" />
-              <span>{t.navSell}</span>
+              <span className="w-5 h-5 rounded-full border-2 border-orange-600 text-orange-600 flex items-center justify-center text-xs font-black leading-none group-hover:scale-110 transition-transform">
+                +
+              </span>
+              <span className="tracking-tight text-orange-600 font-black">
+                {lang === 'te' ? '+ ప్రకటన పోస్ట్ చేయండి' : '+ Post Ad'}
+              </span>
             </button>
           </div>
         </div>

@@ -14,6 +14,7 @@ import { ProfileScreen } from './screens/ProfileScreen';
 import { AdminScreen } from './screens/AdminScreen';
 import { SafetyPolicyScreen } from './screens/SafetyPolicyScreen';
 import { PremiumFeaturesModal } from './screens/PremiumFeaturesModal';
+import { AuthModal } from './components/AuthModal';
 import { testConnection } from './firebase';
 
 const MainApp: React.FC = () => {
@@ -70,6 +71,9 @@ const MainApp: React.FC = () => {
 
       {/* Capacitor-ready Bottom Navigation */}
       {showBottomNav && <BottomNav />}
+
+      {/* Global Auth Troubleshooting & Sign-In Modal */}
+      <AuthModal />
 
       {/* Toast Notification Banner */}
       {toastMessage && (

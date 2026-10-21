@@ -1,0 +1,14 @@
+{
+  "appId": "com.santhakart.app",
+  "appName": "SanthaKart",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "android": {
+    "backgroundColor": "#ffffff",
+    "allowMixedContent": false
+  }
+}

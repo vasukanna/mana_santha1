@@ -26,7 +26,8 @@ export const SellScreen: React.FC = () => {
     setActiveTab,
     openListingDetail,
     showToast,
-    appConfig
+    appConfig,
+    setAuthModalOpen
   } = useApp();
 
   // Form State
@@ -207,12 +208,20 @@ export const SellScreen: React.FC = () => {
                   : 'Sign in with Google to post and manage your listings.'}
               </div>
             </div>
-            <button
-              onClick={loginWithGoogle}
-              className="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl shrink-0 cursor-pointer shadow-xs"
-            >
-              {t.googleSignIn}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={loginWithGoogle}
+                className="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl shrink-0 cursor-pointer shadow-xs"
+              >
+                {t.googleSignIn}
+              </button>
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs px-2.5 py-1.5 rounded-xl shrink-0 cursor-pointer shadow-xs"
+              >
+                {lang === 'te' ? 'తక్షణ లాగిన్' : 'Quick Login'}
+              </button>
+            </div>
           </div>
         )}
 

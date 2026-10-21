@@ -10,7 +10,7 @@ export const translations = {
     // Bottom Nav & Top Bar
     navHome: "సంత హోమ్",
     navCategories: "కేటగిరీలు",
-    navSell: "+ అమ్మండి",
+    navSell: "+ పోస్ట్",
     navChats: "చాట్స్",
     navMyAds: "నా ప్రకటనలు",
     navProfile: "ప్రొఫైల్",

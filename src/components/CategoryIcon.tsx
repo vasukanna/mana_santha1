@@ -12,6 +12,10 @@ import {
   Tractor,
   MapPin,
   PackageCheck,
+  Waves,
+  Wrench,
+  Users,
+  Leaf,
   Tag
 } from 'lucide-react';
 
@@ -44,6 +48,14 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({ name, className = 'w
       return <Tractor className={className} />;
     case 'MapPin':
       return <MapPin className={className} />;
+    case 'Waves':
+      return <Waves className={className} />;
+    case 'Leaf':
+      return <Leaf className={className} />;
+    case 'Wrench':
+      return <Wrench className={className} />;
+    case 'Users':
+      return <Users className={className} />;
     case 'PackageCheck':
       return <PackageCheck className={className} />;
     default:

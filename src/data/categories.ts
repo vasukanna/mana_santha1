@@ -26,135 +26,20 @@ export interface CategoryDef {
 }
 
 export const DEFAULT_CATEGORIES: CategoryDef[] = [
-  {
-    id: "livestock",
-    nameEn: "Livestock",
-    nameTe: "పశువులు & పెంపుడు జీవులు",
-    icon: "Beef",
-    color: "amber",
-    subcategories: [
-      { id: "sheep", nameEn: "Sheep", nameTe: "గొర్రెలు (పొట్టేళ్లు)" },
-      { id: "goats", nameEn: "Goats", nameTe: "మేకలు" },
-      { id: "buffalo", nameEn: "Buffalo", nameTe: "గేదెలు / ఎనుములు" },
-      { id: "cows_bulls", nameEn: "Cows & Bulls", nameTe: "ఆవులు & ఎద్దులు" },
-      { id: "poultry", nameEn: "Country Chicken & Poultry", nameTe: "నాటు కోళ్లు & పౌల్ట్రీ" },
-      { id: "eggs", nameEn: "Eggs", nameTe: "నాటు గుడ్లు & లేయర్ గుడ్లు" }
-    ],
-    customFields: [
-      {
-        id: "breed",
-        labelEn: "Breed / జాతి",
-        labelTe: "జాతి (ఉదా: ఒంగోలు, ముర్రా, నెల్లూరు జాతి)",
-        type: "text",
-        placeholderEn: "e.g. Ongole, Murrah, Nellore Brown, Desi",
-        placeholderTe: "ఉదా: ఒంగోలు జాతి, ముర్రా, నెల్లూరు పొట్టేలు",
-        required: true
-      },
-      {
-        id: "age",
-        labelEn: "Age (వయస్సు)",
-        labelTe: "వయస్సు (నెల్ల లేదా సంవత్సరాలు)",
-        type: "text",
-        placeholderEn: "e.g. 2 Years / 8 Months",
-        placeholderTe: "ఉదా: 2 సంవత్సరాలు లేదా 8 నెలలు"
-      },
-      {
-        id: "weight",
-        labelEn: "Approx Weight (Kg)",
-        labelTe: "అంచనా బరువు (కిలోలు)",
-        type: "number",
-        placeholderEn: "e.g. 35",
-        placeholderTe: "ఉదా: 35 కేజీలు"
-      },
-      {
-        id: "gender",
-        labelEn: "Gender (లింగం)",
-        labelTe: "లింగం",
-        type: "select",
-        options: [
-          { value: "male", labelEn: "Male (మగ)", labelTe: "మగ" },
-          { value: "female", labelEn: "Female (ఆడ)", labelTe: "ఆడ" },
-          { value: "pair", labelEn: "Pair (జత)", labelTe: "జత" },
-          { value: "flock", labelEn: "Flock / Herd (మంద)", labelTe: "మంద (ఎక్కువ సంఖ్య)" }
-        ]
-      },
-      {
-        id: "milkYield",
-        labelEn: "Milk Yield (Liters/Day)",
-        labelTe: "పాల దిగుబడి (రోజుకు లీటర్లు - వర్తిస్తే)",
-        type: "text",
-        placeholderEn: "e.g. 8 - 10 Liters/day",
-        placeholderTe: "ఉదా: రోజుకు 8-10 లీటర్లు"
-      },
-      {
-        id: "health",
-        labelEn: "Health / Vaccination Status",
-        labelTe: "ఆరోగ్య పరిస్థితి & టీకాలు",
-        type: "select",
-        options: [
-          { value: "healthy_vaccinated", labelEn: "Healthy & Fully Vaccinated", labelTe: "ఆరోగ్యంగా ఉంది, టీకాలు వేశారు" },
-          { value: "healthy", labelEn: "Healthy & Active", labelTe: "చాలా చురుగ్గా మరియు ఆరోగ్యంగా ఉంది" },
-          { value: "pregnant", labelEn: "Pregnant / గర్భంతో ఉంది", labelTe: "గర్భంతో ఉంది (చూడి)" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "aqua",
-    nameEn: "Aqua Culture",
-    nameTe: "ఆక్వా కల్చర్",
-    icon: "Fish",
-    color: "cyan",
-    subcategories: [
-      { id: "fish", nameEn: "Fish (Freshwater / Sea)", nameTe: "చేపలు (కట్ల, రోహు, పండుగప్ప)" },
-      { id: "shrimp", nameEn: "Shrimp / Prawn (Vannamei/Tiger)", nameTe: "రొయ్యలు (వెన్నామి / టైగర్)" },
-      { id: "fish_seed", nameEn: "Fish & Shrimp Seed", nameTe: "చేప పిల్లలు / రొయ్య పిల్లలు (సీడ్)" },
-      { id: "aqua_feed", nameEn: "Aqua Feed & Supplements", nameTe: "ఆక్వా ఫీడ్ & మందులు" }
-    ],
-    customFields: [
-      {
-        id: "countPerKg",
-        labelEn: "Count / Size (per Kg)",
-        labelTe: "కౌంట్ / పరిమాణం (కేజీకి ఎన్ని)",
-        type: "text",
-        placeholderEn: "e.g. 30-40 count or 1.5kg fish",
-        placeholderTe: "ఉదా: 30-40 కౌంట్ లేదా 1.5 కేజీ చేప"
-      },
-      {
-        id: "pondType",
-        labelEn: "Water Type (నీటి రకం)",
-        labelTe: "సాగు నీటి రకం",
-        type: "select",
-        options: [
-          { value: "freshwater", labelEn: "Fresh Water (మంచినీరు)", labelTe: "మంచినీరు" },
-          { value: "brackish", labelEn: "Brackish / Saline (ఉప్పునీరు)", labelTe: "ఉప్పునీరు / తీరప్రాంతం" }
-        ]
-      },
-      {
-        id: "harvestReadiness",
-        labelEn: "Harvest Status",
-        labelTe: "పట్టుబడి పరిస్థితి",
-        type: "select",
-        options: [
-          { value: "ready", labelEn: "Ready to harvest now", labelTe: "ఇప్పుడే పట్టుబడికి సిద్ధం" },
-          { value: "within_10_days", labelEn: "Within 10 days", labelTe: "10 రోజుల్లో పట్టుబడి" },
-          { value: "seed_available", labelEn: "Seed ready for booking", labelTe: "సీడ్ బుకింగ్ సిద్ధం" }
-        ]
-      }
-    ]
-  },
+  // 1. Cereals & Grains
   {
     id: "cereals",
-    nameEn: "Cereals & Millets",
+    nameEn: "Cereals & Grains",
     nameTe: "ధాన్యాలు & చిరుధాన్యాలు",
     icon: "Wheat",
-    color: "yellow",
+    color: "amber",
     subcategories: [
       { id: "paddy", nameEn: "Paddy & Rice", nameTe: "వరి ధాన్యం & బియ్యం" },
       { id: "maize", nameEn: "Maize / Corn", nameTe: "మొక్కజొన్న" },
       { id: "jowar", nameEn: "Jowar (Sorghum)", nameTe: "తెల్ల / పచ్చ జొన్నలు" },
       { id: "bajra", nameEn: "Bajra (Pearl Millet)", nameTe: "సజ్జలు" },
-      { id: "ragi", nameEn: "Ragi (Finger Millet)", nameTe: "రాగులు (చోళ్లు)" }
+      { id: "ragi", nameEn: "Ragi (Finger Millet)", nameTe: "రాగులు (చోళ్లు)" },
+      { id: "wheat_barley", nameEn: "Wheat & Barley", nameTe: "గోధుమలు & బార్లీ" }
     ],
     customFields: [
       {
@@ -197,6 +82,8 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
       }
     ]
   },
+
+  // 2. Pulses
   {
     id: "pulses",
     nameEn: "Pulses",
@@ -207,7 +94,9 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
       { id: "red_gram", nameEn: "Red Gram (Toor Dal)", nameTe: "కందులు (కందిపప్పు)" },
       { id: "black_gram", nameEn: "Black Gram (Urad Dal)", nameTe: "మినుములు (మినపపప్పు)" },
       { id: "green_gram", nameEn: "Green Gram (Moong Dal)", nameTe: "పెసలు (పెసరపప్పు)" },
-      { id: "bengal_gram", nameEn: "Bengal Gram (Chana)", nameTe: "శనగలు (పచ్చి శనగలు)" }
+      { id: "bengal_gram", nameEn: "Bengal Gram (Chana)", nameTe: "శనగలు (పచ్చి శనగలు)" },
+      { id: "horse_gram", nameEn: "Horse Gram (Ulavalu)", nameTe: "ఉలవలు" },
+      { id: "cowpea", nameEn: "Cowpea (Alasandalu)", nameTe: "అలసందలు (బొబ్బర్లు)" }
     ],
     customFields: [
       {
@@ -239,17 +128,20 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
       }
     ]
   },
+
+  // 3. Oilseeds
   {
     id: "oilseeds",
     nameEn: "Oilseeds",
     nameTe: "నూనె గింజలు",
     icon: "Droplets",
-    color: "orange",
+    color: "yellow",
     subcategories: [
-      { id: "groundnut", nameEn: "Groundnut (Peanut)", nameTe: "వేరుశనగ (వేరుసెనగ కాయలు / పప్పు)" },
+      { id: "groundnut", nameEn: "Groundnut (Peanut)", nameTe: "వేరుశనగ (కాయలు / పప్పు)" },
       { id: "sesame", nameEn: "Sesame (Gingelly)", nameTe: "నువ్వులు (తెల్ల / నల్ల)" },
       { id: "sunflower", nameEn: "Sunflower", nameTe: "పొద్దుతిరుగుడు" },
       { id: "castor", nameEn: "Castor", nameTe: "ఆముదం" },
+      { id: "mustard", nameEn: "Mustard (Avalu)", nameTe: "ఆవాలు" },
       { id: "oil_palm", nameEn: "Oil Palm", nameTe: "ఆయిల్ పామ్ గెలలు" }
     ],
     customFields: [
@@ -270,9 +162,71 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
           { value: "raw_pod", labelEn: "Raw Pods with shell (కాయలు)", labelTe: "కాయలతో సహా" },
           { value: "kernel", labelEn: "Kernels / Seeds (పప్పు / గింజలు)", labelTe: "పప్పు / గింజలు" }
         ]
+      },
+      {
+        id: "quantityAvailable",
+        labelEn: "Quantity (Quintals)",
+        labelTe: "మొత్తం పరిమాణం (క్వింటాళ్లు)",
+        type: "text",
+        placeholderEn: "e.g. 50 Quintals",
+        placeholderTe: "ఉదా: 50 క్వింటాళ్లు"
       }
     ]
   },
+
+  // 4. Fruits & Vegetables
+  {
+    id: "fruits_vegetables",
+    nameEn: "Fruits & Vegetables",
+    nameTe: "పండ్లు & కూరగాయలు",
+    icon: "Apple",
+    color: "rose",
+    subcategories: [
+      { id: "tomato", nameEn: "Tomato", nameTe: "టమోటా (మదనపల్లె / పలమనేరు)" },
+      { id: "onion", nameEn: "Onion", nameTe: "ఉల్లిపాయలు" },
+      { id: "mango", nameEn: "Mango (Banginapalli/Totapuri)", nameTe: "మామిడి (బంగినపల్లి, తోతాపురి)" },
+      { id: "banana", nameEn: "Banana (Karpura/Chakkarakeli)", nameTe: "అరటి (కర్పూర, చక్కెరకేళి)" },
+      { id: "citrus", nameEn: "Sweet Orange & Lemon", nameTe: "బత్తాయి & నిమ్మకాయలు" },
+      { id: "papaya", nameEn: "Papaya (Red Lady)", nameTe: "బొప్పాయి (రెడ్ లేడీ)" },
+      { id: "green_chilli", nameEn: "Green Chilli", nameTe: "పచ్చిమిర్చి" },
+      { id: "brinjal", nameEn: "Brinjal (Eggplant)", nameTe: "వంకాయలు (గుత్తి వంకాయ)" },
+      { id: "watermelon", nameEn: "Watermelon / Melons", nameTe: "పుచ్చకాయ & ఖర్బూజ" },
+      { id: "leafy_veg", nameEn: "Leafy Vegetables", nameTe: "ఆకుకూరలు (తోటకూర, పాలకూర)" },
+      { id: "flowers", nameEn: "Flowers (Marigold/Jasmine)", nameTe: "పూలు (బంతి, మల్లె, చామంతి)" }
+    ],
+    customFields: [
+      {
+        id: "variety",
+        labelEn: "Variety / Name",
+        labelTe: "పండు / కూరగాయ రకం (ఉదా: సాహో టమోటా, బంగినపల్లి)",
+        type: "text",
+        placeholderEn: "e.g. Saho Tomato, Banganapalli, Red Lady",
+        placeholderTe: "ఉదా: సాహో టమోటా, బంగినపల్లి మామిడి"
+      },
+      {
+        id: "dailyQuantity",
+        labelEn: "Available Quantity (Crates/Boxes/Tons)",
+        labelTe: "అందుబాటులో ఉన్న బాక్సులు / క్రేట్లు / టన్నులు",
+        type: "text",
+        placeholderEn: "e.g. 50 Crates / 2 Tons",
+        placeholderTe: "ఉదా: 50 క్రేట్లు లేదా 2 టన్నులు",
+        required: true
+      },
+      {
+        id: "freshness",
+        labelEn: "Harvest Time",
+        labelTe: "కోత సమయం",
+        type: "select",
+        options: [
+          { value: "fresh_today", labelEn: "Harvested Today (ఈరోజే కోసిన తాజా సరుకు)", labelTe: "ఈరోజే కోసిన తాజా సరుకు" },
+          { value: "harvest_tomorrow", labelEn: "Will harvest on order (ఆర్డర్ ఇస్తే కోసి ఇస్తాం)", labelTe: "ఆర్డర్ ఇస్తే కోసి ఇస్తాం" },
+          { value: "orchard_lease", labelEn: "Full Garden/Orchard Lease (తోట కౌలు / వేలం)", labelTe: "మొత్తం తోట కౌలు / కాపు వేలం" }
+        ]
+      }
+    ]
+  },
+
+  // 5. Commercial Crops
   {
     id: "commercial_crops",
     nameEn: "Commercial Crops",
@@ -321,93 +275,141 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
       }
     ]
   },
+
+  // 6. Livestock & Poultry
   {
-    id: "fruits",
-    nameEn: "Fruits & Orchards",
-    nameTe: "పండ్ల తోటలు & పండ్లు",
-    icon: "Apple",
-    color: "rose",
+    id: "livestock",
+    nameEn: "Livestock & Poultry",
+    nameTe: "పశువులు & పౌల్ట్రీ",
+    icon: "Beef",
+    color: "amber",
     subcategories: [
-      { id: "mango", nameEn: "Mango (Banginapalli/Totapuri)", nameTe: "మామిడి (బంగినపల్లి, తోతాపురి)" },
-      { id: "banana", nameEn: "Banana (Karpura/Chakkarakeli)", nameTe: "అరటి (కర్పూర, చక్కెరకేళి, గ్రాండ్ నైన్)" },
-      { id: "citrus", nameEn: "Sweet Orange / Citrus / Lemon", nameTe: "బత్తాయి & నిమ్మకాయలు" },
-      { id: "papaya", nameEn: "Papaya (Red Lady)", nameTe: "బొప్పాయి (రెడ్ లేడీ)" },
-      { id: "guava", nameEn: "Guava (Taiwan Pink/L-49)", nameTe: "జామ (తైవాన్ జామ)" },
-      { id: "watermelon", nameEn: "Watermelon / Muskmelon", nameTe: "పుచ్చకాయ / ఖర్బూజ" },
-      { id: "pomegranate", nameEn: "Pomegranate (Bhagwa)", nameTe: "దానిమ్మ (భగ్వా)" }
+      { id: "sheep", nameEn: "Sheep", nameTe: "గొర్రెలు (పొట్టేళ్లు)" },
+      { id: "buffalo", nameEn: "Buffalo", nameTe: "గేదెలు / ఎనుములు" },
+      { id: "cows_bulls", nameEn: "Cows & Bulls", nameTe: "ఆవులు & ఎద్దులు" },
+      { id: "goats", nameEn: "Goats", nameTe: "మేకలు" },
+      { id: "poultry", nameEn: "Country Chicken & Poultry", nameTe: "నాటు కోళ్లు & పౌల్ట్రీ" },
+      { id: "eggs", nameEn: "Eggs", nameTe: "నాటు గుడ్లు & లేయర్ గుడ్లు" }
     ],
     customFields: [
       {
-        id: "variety",
-        labelEn: "Fruit Variety",
-        labelTe: "పండు రకం (ఉదా: బంగినపల్లి, రసాలు, భగ్వా)",
+        id: "breed",
+        labelEn: "Breed / జాతి",
+        labelTe: "జాతి (ఉదా: ఒంగోలు, ముర్రా, నెల్లూరు జాతి)",
         type: "text",
-        placeholderEn: "e.g. Banganapalli, Suvarnarekha, Red Lady",
-        placeholderTe: "ఉదా: బంగినపల్లి, రసాలు, రెడ్ లేడీ"
-      },
-      {
-        id: "orchardOrBulk",
-        labelEn: "Sale Type",
-        labelTe: "విక్రయ రకం",
-        type: "select",
-        options: [
-          { value: "harvested_crates", labelEn: "Harvested in Crates/Boxes (కోసిన కాయలు)", labelTe: "కోసిన కాయలు (క్రేట్లు / బాక్సులు)" },
-          { value: "full_orchard_lease", labelEn: "Full Garden/Orchard Lease (మొత్తం తోట కౌలు / వేలం)", labelTe: "మొత్తం తోట కౌలు / కాపు వేలం" },
-          { value: "tonnage", labelEn: "Per Ton / Lorry Load (టన్నుల చొప్పున)", labelTe: "టన్నుల చొప్పున / లారీ లోడ్" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "vegetables",
-    nameEn: "Vegetables & Flowers",
-    nameTe: "కూరగాయలు & పూలు",
-    icon: "Carrot",
-    color: "green",
-    subcategories: [
-      { id: "tomato", nameEn: "Tomato", nameTe: "టమోటా (మదనపల్లె / పలమనేరు రకాలు)" },
-      { id: "onion", nameEn: "Onion", nameTe: "ఉల్లిపాయలు" },
-      { id: "brinjal", nameEn: "Brinjal (Eggplant)", nameTe: "వంకాయలు (గుత్తి వంకాయ)" },
-      { id: "okra", nameEn: "Okra (Bhendi)", nameTe: "బెండకాయలు" },
-      { id: "green_chilli", nameEn: "Green Chilli", nameTe: "పచ్చిమిర్చి" },
-      { id: "leafy_veg", nameEn: "Leafy Vegetables", nameTe: "ఆకుకూరలు (తోటకూర, పాలకూర, కొత్తిమీర)" },
-      { id: "flowers", nameEn: "Flowers (Marigold/Jasmine)", nameTe: "పూలు (బంతి, మల్లె, చామంతి)" }
-    ],
-    customFields: [
-      {
-        id: "dailyQuantity",
-        labelEn: "Daily / Available Quantity (Boxes/Bags)",
-        labelTe: "అందుబాటులో ఉన్న బాక్సులు / బస్తాలు",
-        type: "text",
-        placeholderEn: "e.g. 50 Crates / 25 Kg bags",
-        placeholderTe: "ఉదా: 50 క్రేట్లు లేదా 20 బస్తాలు",
+        placeholderEn: "e.g. Ongole, Murrah, Nellore Brown, Desi",
+        placeholderTe: "ఉదా: ఒంగోలు జాతి, ముర్రా, నెల్లూరు పొట్టేలు",
         required: true
       },
       {
-        id: "freshness",
-        labelEn: "Harvest Time",
-        labelTe: "కోత సమయం",
+        id: "age",
+        labelEn: "Age (వయస్సు)",
+        labelTe: "వయస్సు (నెలలు లేదా సంవత్సరాలు)",
+        type: "text",
+        placeholderEn: "e.g. 2 Years / 8 Months",
+        placeholderTe: "ఉదా: 2 సంవత్సరాలు లేదా 8 నెలలు"
+      },
+      {
+        id: "weight",
+        labelEn: "Approx Weight (Kg)",
+        labelTe: "అంచనా బరువు (కిలోలు)",
+        type: "number",
+        placeholderEn: "e.g. 35",
+        placeholderTe: "ఉదా: 35 కేజీలు"
+      },
+      {
+        id: "gender",
+        labelEn: "Gender (లింగం)",
+        labelTe: "లింగం",
         type: "select",
         options: [
-          { value: "fresh_today", labelEn: "Harvested Today (ఈరోజే కోసిన తాజా సరుకు)", labelTe: "ఈరోజే కోసిన తాజా సరుకు" },
-          { value: "harvest_tomorrow", labelEn: "Will harvest on order (ఆర్డర్ ఇస్తే కోసి ఇస్తాం)", labelTe: "ఆర్డర్ ఇస్తే కోసి ఇస్తాం" }
+          { value: "male", labelEn: "Male (మగ)", labelTe: "మగ" },
+          { value: "female", labelEn: "Female (ఆడ)", labelTe: "ఆడ" },
+          { value: "pair", labelEn: "Pair (జత)", labelTe: "జత" },
+          { value: "flock", labelEn: "Flock / Herd (మంద)", labelTe: "మంద (ఎక్కువ సంఖ్య)" }
+        ]
+      },
+      {
+        id: "milkYield",
+        labelEn: "Milk Yield (Liters/Day)",
+        labelTe: "పాల దిగుబడి (రోజుకు లీటర్లు - వర్తిస్తే)",
+        type: "text",
+        placeholderEn: "e.g. 8 - 10 Liters/day",
+        placeholderTe: "ఉదా: రోజుకు 8-10 లీటర్లు"
+      },
+      {
+        id: "health",
+        labelEn: "Health / Vaccination Status",
+        labelTe: "ఆరోగ్య పరిస్థితి & టీకాలు",
+        type: "select",
+        options: [
+          { value: "healthy_vaccinated", labelEn: "Healthy & Fully Vaccinated", labelTe: "ఆరోగ్యంగా ఉంది, టీకాలు వేశారు" },
+          { value: "healthy", labelEn: "Healthy & Active", labelTe: "చాలా చురుగ్గా మరియు ఆరోగ్యంగా ఉంది" },
+          { value: "pregnant", labelEn: "Pregnant / గర్భంతో ఉంది", labelTe: "గర్భంతో ఉంది (చూడి)" }
         ]
       }
     ]
   },
+
+  // 7. Aqua & Fisheries
+  {
+    id: "aqua",
+    nameEn: "Aqua & Fisheries",
+    nameTe: "ఆక్వా & మత్స్య సంపద",
+    icon: "Fish",
+    color: "cyan",
+    subcategories: [
+      { id: "shrimp", nameEn: "Shrimp / Prawn (Vannamei/Tiger)", nameTe: "రొయ్యలు (వెన్నామి / టైగర్)" },
+      { id: "fish", nameEn: "Fish (Freshwater / Sea)", nameTe: "చేపలు (కట్ల, రోహు, పండుగప్ప)" },
+      { id: "fish_seed", nameEn: "Fish & Shrimp Seed", nameTe: "చేప పిల్లలు / రొయ్య పిల్లలు (సీడ్)" },
+      { id: "aqua_feed", nameEn: "Aqua Feed & Supplements", nameTe: "ఆక్వా ఫీడ్ & మందులు" }
+    ],
+    customFields: [
+      {
+        id: "countPerKg",
+        labelEn: "Count / Size (per Kg)",
+        labelTe: "కౌంట్ / పరిమాణం (కేజీకి ఎన్ని)",
+        type: "text",
+        placeholderEn: "e.g. 30-40 count or 1.5kg fish",
+        placeholderTe: "ఉదా: 30-40 కౌంట్ లేదా 1.5 కేజీ చేప"
+      },
+      {
+        id: "pondType",
+        labelEn: "Water Type (నీటి రకం)",
+        labelTe: "సాగు నీటి రకం",
+        type: "select",
+        options: [
+          { value: "freshwater", labelEn: "Fresh Water (మంచినీరు)", labelTe: "మంచినీరు" },
+          { value: "brackish", labelEn: "Brackish / Saline (ఉప్పునీరు)", labelTe: "ఉప్పునీరు / తీరప్రాంతం" }
+        ]
+      },
+      {
+        id: "harvestReadiness",
+        labelEn: "Harvest Status",
+        labelTe: "పట్టుబడి పరిస్థితి",
+        type: "select",
+        options: [
+          { value: "ready", labelEn: "Ready to harvest now", labelTe: "ఇప్పుడే పట్టుబడికి సిద్ధం" },
+          { value: "within_10_days", labelEn: "Within 10 days", labelTe: "10 రోజుల్లో పట్టుబడి" },
+          { value: "seed_available", labelEn: "Seed ready for booking", labelTe: "సీడ్ బుకింగ్ సిద్ధం" }
+        ]
+      }
+    ]
+  },
+
+  // 8. Agri Inputs
   {
     id: "inputs",
     nameEn: "Agri Inputs",
-    nameTe: "ఎరువులు, విత్తనాలు & మందులు",
+    nameTe: "ఎరువులు, విత్తనాలు & రసాయనాలు",
     icon: "Sprout",
     color: "lime",
     subcategories: [
-      { id: "fertilisers", nameEn: "Fertilisers (Urea/DAP/Complex)", nameTe: "రసాయన ఎరువులు" },
       { id: "seeds", nameEn: "Certified Seeds", nameTe: "సర్టిఫైడ్ విత్తనాలు" },
+      { id: "fertilisers", nameEn: "Fertilisers (Bio & Chemical)", nameTe: "రసాయన & సేంద్రీయ ఎరువులు" },
       { id: "pesticides", nameEn: "Pesticides & Bio-Pesticides", nameTe: "పురుగు మందులు & బయో మందులు" },
       { id: "organic_manure", nameEn: "Organic Manure & Vermicompost", nameTe: "పశువుల పెంట, వర్మీ కంపోస్ట్ & జీవామృతం" },
-      { id: "cattle_feed", nameEn: "Cattle & Poultry Feed", nameTe: "దాణా, పశుగ్రాసం (సైలేజ్ / గడ్డి)" },
-      { id: "vet_medicines", nameEn: "Veterinary Medicines & Tonics", nameTe: "పశువైద్య మందులు & టానిక్కులు" }
+      { id: "tonics", nameEn: "Plant Growth Regulators & Tonics", nameTe: "మొక్కల బయో టానిక్కులు & పోషకాలు" }
     ],
     customFields: [
       {
@@ -430,26 +432,26 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
       }
     ]
   },
+
+  // 9. Machinery & Rentals
   {
     id: "machinery",
     nameEn: "Machinery & Rentals",
-    nameTe: "ట్రాక్టర్లు, యంత్రాలు & అద్దెలు",
+    nameTe: "యంత్రాలు, ట్రాక్టర్లు & అద్దెలు",
     icon: "Tractor",
     color: "indigo",
     subcategories: [
       { id: "tractors", nameEn: "Tractors & Trolleys", nameTe: "ట్రాక్టర్లు & ట్రాలీలు" },
       { id: "tillers", nameEn: "Power Tillers & Weeders", nameTe: "పవర్ టిల్లర్లు & వీడర్లు" },
-      { id: "sprayers", nameEn: "Battery / Engine Sprayers", nameTe: "స్ప్రేయర్లు & డ్రోన్ స్ప్రేయింగ్" },
-      { id: "pumps", nameEn: "Motors, Submersible Pumps & Pipes", nameTe: "బోరు మోటార్లు, పంపులు & పైపులు" },
-      { id: "equipment_rental", nameEn: "Harvesters & Threshers Rental", nameTe: "వరి కోత మిషన్లు & నూర్పిడి యంత్రాల అద్దె" },
-      { id: "labour", nameEn: "Farm Labour Contractors", nameTe: "వ్యవసాయ కూలీల సమూహం" },
-      { id: "transport", nameEn: "Transport Vehicles (Auto / Lorry)", nameTe: "వ్యవసాయ రవాణా వాహనాలు (ఆటో/లారీ)" }
+      { id: "harvesters", nameEn: "Combine Harvesters & Threshers", nameTe: "వరి కోత మిషన్లు & నూర్పిడి యంత్రాలు" },
+      { id: "sprayers", nameEn: "Battery / Engine Sprayers & Drones", nameTe: "స్ప్రేయర్లు & డ్రోన్ స్ప్రేయింగ్" },
+      { id: "ploughs", nameEn: "Ploughs, Rotavators & Cultivators", nameTe: "నాగళ్లు, రొటవేటర్లు & కల్టివేటర్లు" }
     ],
     customFields: [
       {
         id: "machineModel",
         labelEn: "Make & Model (తయారీ & మోడల్)",
-        labelTe: "బ్రాండ్ & మోడల్ (ఉదా: మహీంద్రా 575, జాన్ డీర్, సోనాలిక)",
+        labelTe: "బ్రాండ్ & మోడల్ (ఉదా: మహీంద్రా 575, జాన్ డీర్)",
         type: "text",
         placeholderEn: "e.g. Mahindra 575 DI, 2021 Model",
         placeholderTe: "ఉదా: మహీంద్రా 575 DI, 2021 మోడల్",
@@ -478,16 +480,107 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
       }
     ]
   },
+
+  // 10. Irrigation & Water Solutions
+  {
+    id: "irrigation",
+    nameEn: "Irrigation & Water Solutions",
+    nameTe: "నీటిపారుదల, మోటార్లు & డ్రిప్ పరికరాలు",
+    icon: "Waves",
+    color: "blue",
+    subcategories: [
+      { id: "submersible_pumps", nameEn: "Submersible Pumps & Motors", nameTe: "బోరుబావి మోటార్లు & పంపులు" },
+      { id: "drip_sprinklers", nameEn: "Drip & Sprinkler Systems", nameTe: "డ్రిప్ ఇరిగేషన్ & స్ప్రింక్లర్లు" },
+      { id: "pipes_tarpaulins", nameEn: "PVC, HDPE & Tarpaulin Pipes", nameTe: "పైపులు, డెలివరీ పైపులు & టార్పాలిన్లు" },
+      { id: "solar_pumps", nameEn: "Solar Agri Pumps & Panels", nameTe: "సోలార్ పంపులు & ప్యానెల్స్" },
+      { id: "valves_fittings", nameEn: "Water Valves, Filters & Fittings", nameTe: "వాల్వ్‌లు, ఫిల్టర్లు & ఫిట్టింగ్‌లు" }
+    ],
+    customFields: [
+      {
+        id: "equipmentType",
+        labelEn: "Equipment Type",
+        labelTe: "పరికర రకం (మోటార్ / డ్రిప్ / పైపులు)",
+        type: "text",
+        placeholderEn: "e.g. 7.5 HP Submersible, Drip Kit for 2 Acres",
+        placeholderTe: "ఉదా: 7.5 హెచ్‌పీ మోటార్, 2 ఎకరాల డ్రిప్ కిట్",
+        required: true
+      },
+      {
+        id: "motorHp",
+        labelEn: "Motor Capacity (HP) - if pump",
+        labelTe: "మోటార్ సామర్థ్యం (HP - పంపు అయితే)",
+        type: "text",
+        placeholderEn: "e.g. 5 HP, 7.5 HP, 10 HP",
+        placeholderTe: "ఉదా: 5 హెచ్‌పీ, 7.5 హెచ్‌పీ"
+      },
+      {
+        id: "brand",
+        labelEn: "Brand Name",
+        labelTe: "కంపెనీ పేరు (CRI, Texmo, Finolex, Netafim)",
+        type: "text",
+        placeholderEn: "e.g. CRI, Texmo, Kirloskar, Finolex",
+        placeholderTe: "ఉదా: టెక్స్‌మో, సి.ఆర్.ఐ, ఫినోలెక్స్"
+      }
+    ]
+  },
+
+  // 11. Fodder & Agricultural By-products
+  {
+    id: "fodder",
+    nameEn: "Fodder & Agricultural By-products",
+    nameTe: "పశుగ్రాసం & వ్యవసాయ ఉప-ఉత్పత్తులు",
+    icon: "Leaf",
+    color: "emerald",
+    subcategories: [
+      { id: "dry_straw", nameEn: "Paddy Straw & Dry Fodder (Gaddi)", nameTe: "వరి ఎండుగడ్డి & చొప్ప (గడ్డి వాములు)" },
+      { id: "green_fodder", nameEn: "Green Fodder, Napier & Silage", nameTe: "పచ్చిగడ్డి, సూపర్‌నేపియర్ & సైలేజ్" },
+      { id: "cattle_feed", nameEn: "Cattle & Poultry Feed, Oil Cakes", nameTe: "చెక్కలు, తవుడు & దాణా" },
+      { id: "husk_bran", nameEn: "Husk, Bran & Agro By-products", nameTe: "వరి పొట్టు, తౌడు & వేస్ట్" }
+    ],
+    customFields: [
+      {
+        id: "fodderType",
+        labelEn: "Fodder / Product Type",
+        labelTe: "గడ్డి / ఉప-ఉత్పత్తి రకం",
+        type: "text",
+        placeholderEn: "e.g. Dry Paddy Straw, Corn Silage, Cotton Seed Cake",
+        placeholderTe: "ఉదా: వరి ఎండుగడ్డి, మొక్కజొన్న సైలేజ్, పత్తి చెక్క",
+        required: true
+      },
+      {
+        id: "quantityAvailable",
+        labelEn: "Quantity (Tractor Loads/Bales/Tons)",
+        labelTe: "పరిమాణం (ట్రాక్టర్ లోడ్లు / బేళ్ళు / టన్నులు)",
+        type: "text",
+        placeholderEn: "e.g. 5 Tractor Loads / 100 Bales",
+        placeholderTe: "ఉదా: 3 ట్రాక్టర్ లోడ్లు లేదా 50 బేళ్ళు",
+        required: true
+      },
+      {
+        id: "deliveryAvailable",
+        labelEn: "Transport / Delivery Available?",
+        labelTe: "రవాణా సౌకర్యం కలదా?",
+        type: "select",
+        options: [
+          { value: "yes", labelEn: "Yes, delivery arranged to buyer village", labelTe: "అవును, ఊరికి చేరవేస్తాము" },
+          { value: "buyer_pickup", labelEn: "Buyer must arrange pickup at field", labelTe: "కొనుగోలుదారుడే వాహనం తీసుకురావాలి" }
+        ]
+      }
+    ]
+  },
+
+  // 12. Land & Farm Lease
   {
     id: "land",
     nameEn: "Land & Farm Lease",
     nameTe: "వ్యవసాయ భూములు & కౌలు",
     icon: "MapPin",
-    color: "emerald",
+    color: "teal",
     subcategories: [
       { id: "agri_land_sale", nameEn: "Agricultural Land for Sale", nameTe: "వ్యవసాయ భూమి అమ్మకం" },
       { id: "lease_land", nameEn: "Land for Crop Lease (కౌలు భూమి)", nameTe: "పంటల కౌలు భూమి" },
-      { id: "farm_sheds", nameEn: "Poultry / Dairy Farm Sheds", nameTe: "పౌల్ట్రీ / డైరీ ఫామ్ షెడ్లు & గోదాములు" }
+      { id: "farm_sheds", nameEn: "Poultry / Dairy Farm Sheds", nameTe: "పౌల్ట్రీ / డైరీ ఫామ్ షెడ్లు & గోదాములు" },
+      { id: "orchard_lease", nameEn: "Orchard / Garden Lease (తోటల కౌలు)", nameTe: "మామిడి, బత్తాయి తోటల కౌలు & వేలం" }
     ],
     customFields: [
       {
@@ -533,18 +626,117 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
       }
     ]
   },
+
+  // 13. Spare Parts & Repairs
+  {
+    id: "spare_parts",
+    nameEn: "Spare Parts & Repairs",
+    nameTe: "స్పేర్ పార్ట్స్ & రిపేర్ సేవలు",
+    icon: "Wrench",
+    color: "zinc",
+    subcategories: [
+      { id: "tractor_spares", nameEn: "Tractor & Auto Spares", nameTe: "ట్రాక్టర్ స్పేర్ పార్ట్స్ & టైర్లు" },
+      { id: "motor_rewinding", nameEn: "Motor Rewinding & Pump Spares", nameTe: "మోటార్ రీవైండింగ్ & పంపు సామాన్లు" },
+      { id: "sprayer_batteries", nameEn: "Sprayer Parts & Batteries", nameTe: "స్ప్రేయర్ బ్యాటరీలు & నాజిళ్ళు" },
+      { id: "blades_belts", nameEn: "Harvester & Tiller Blades & Belts", nameTe: "కోత మిషన్ బ్లేడ్లు & బెల్టులు" },
+      { id: "workshop_repairs", nameEn: "Workshop & Mechanical Repairs", nameTe: "వర్క్‌షాప్ రిపేర్లు & వెల్డింగ్" }
+    ],
+    customFields: [
+      {
+        id: "compatibleMachine",
+        labelEn: "Compatible Machine / Brand",
+        labelTe: "ఏ యంత్రానికి ఉపయోగపడుతుంది? (ఉదా: మహీంద్రా, జాన్ డీర్, టెక్స్‌మో)",
+        type: "text",
+        placeholderEn: "e.g. Mahindra 575 DI, CRI 5HP Pump, Power Tiller",
+        placeholderTe: "ఉదా: మహీంద్రా 575, సీఆర్ఐ పంపు, పవర్ టిల్లర్",
+        required: true
+      },
+      {
+        id: "partType",
+        labelEn: "Spare Part Name / Service",
+        labelTe: "స్పేర్ పార్ట్ పేరు / సర్వీస్ వివరాలు",
+        type: "text",
+        placeholderEn: "e.g. Clutch Plate, Submersible Bush, 12V Battery",
+        placeholderTe: "ఉదా: క్లచ్ ప్లేట్, బుష్, 12V బ్యాటరీ"
+      },
+      {
+        id: "condition",
+        labelEn: "Part Condition",
+        labelTe: "స్థితి",
+        type: "select",
+        options: [
+          { value: "brand_new", labelEn: "Brand New (పూర్తిగా కొత్తది)", labelTe: "పూర్తిగా కొత్తది (కంపెనీ ప్యాక్)" },
+          { value: "reconditioned", labelEn: "Reconditioned / Refurbished", labelTe: "రీకండిషన్ చేసినది (మంచి కండిషన్)" },
+          { value: "repair_service", labelEn: "Repair Service (రిపేర్ సేవ)", labelTe: "సర్వీస్ / రిపేర్ చేస్తాము" }
+        ]
+      }
+    ]
+  },
+
+  // 14. Farm Labour & Services
+  {
+    id: "farm_labour",
+    nameEn: "Farm Labour & Services",
+    nameTe: "వ్యవసాయ కూలీలు, కాంట్రాక్టర్లు & సేవలు",
+    icon: "Users",
+    color: "violet",
+    subcategories: [
+      { id: "harvest_planting_labour", nameEn: "Harvesting & Planting Labour Teams", nameTe: "వరి నాట్లు & కోతల కూలీల ముఠా" },
+      { id: "agri_transport", nameEn: "Agri Transport (Auto / Lorry / Tractor)", nameTe: "వ్యవసాయ రవాణా వాహనాలు (ఆటో / లారీ)" },
+      { id: "crop_advisory", nameEn: "Crop Advisory & Soil Testing", nameTe: "నేల పరీక్ష & పంట రక్షణ సలహాలు" },
+      { id: "vet_services", nameEn: "Veterinary Doctors & AI Services", nameTe: "పశు వైద్య సేవలు & కృత్రిమ గర్భధారణ" }
+    ],
+    customFields: [
+      {
+        id: "serviceType",
+        labelEn: "Service / Labour Specialisation",
+        labelTe: "సేవ / కూలీల పని రకం (నాట్లు / కోతలు / రవాణా)",
+        type: "text",
+        placeholderEn: "e.g. Paddy Transplantation Gang, Lorry Load Transport",
+        placeholderTe: "ఉదా: వరి నాట్ల ముఠా (15 మంది), లారీ లోడ్ రవాణా",
+        required: true
+      },
+      {
+        id: "teamSize",
+        labelEn: "Team Size / Capacity",
+        labelTe: "కూలీల సంఖ్య లేదా వాహన సామర్థ్యం",
+        type: "text",
+        placeholderEn: "e.g. 15 Persons / 10 Ton Lorry",
+        placeholderTe: "ఉదా: 15 మంది కూలీలు / 10 టన్నుల లారీ"
+      },
+      {
+        id: "dailyRate",
+        labelEn: "Rate / Pricing Terms",
+        labelTe: "రేటు / ధర (రోజుకు లేదా ఎకరానికి)",
+        type: "text",
+        placeholderEn: "e.g. ₹500 per day / ₹4,000 per acre",
+        placeholderTe: "ఉదా: రోజుకు ₹500 లేదా ఎకరానికి ₹4,000"
+      }
+    ]
+  },
+
+  // 15. Other Rural Needs
   {
     id: "other",
     nameEn: "Other Rural Needs",
-    nameTe: "ఇతర అవసరాలు & సేవలు",
+    nameTe: "ఇతర గ్రామీణ అవసరాలు & వస్తువులు",
     icon: "PackageCheck",
     color: "slate",
     subcategories: [
-      { id: "used_agri_items", nameEn: "Used Farm Items & Tools", nameTe: "పాత వ్యవసాయ పనిముట్లు & పరికరాలు" },
-      { id: "household", nameEn: "Village Household Items", nameTe: "గ్రామీణ గృహోపకరణాలు & వస్తువులు" },
-      { id: "services", nameEn: "Local Agricultural & Trade Services", nameTe: "గ్రామీణ సేవలు & వ్యాపారాలు" }
+      { id: "used_agri_items", nameEn: "Used Farm Tools & Implements", nameTe: "పాత వ్యవసాయ పనిముట్లు & పరికరాలు" },
+      { id: "household", nameEn: "Village Household & Solar Items", nameTe: "గ్రామీణ గృహోపకరణాలు & సోలార్ లైట్లు" },
+      { id: "handicrafts", nameEn: "Rural Handicrafts & Trade", nameTe: "చేతివృత్తులు, బుట్టలు & చేనేత" }
     ],
     customFields: [
+      {
+        id: "itemCategory",
+        labelEn: "Item / Service Details",
+        labelTe: "వస్తువు లేదా సేవ వివరాలు",
+        type: "text",
+        placeholderEn: "e.g. Used Diesel Engine, Solar Home Light",
+        placeholderTe: "ఉదా: డీజిల్ ఇంజిన్, సోలార్ లైట్",
+        required: true
+      },
       {
         id: "condition",
         labelEn: "Item Condition (స్థితి)",
