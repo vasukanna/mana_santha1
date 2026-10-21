@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   Video,
   Clock,
-  UserCheck
+  UserCheck,
+  UserX
 } from 'lucide-react';
 import { db, OperationType, handleFirestoreError } from '../firebase';
 import { collection, query, where, getDocs, addDoc, doc, setDoc } from 'firebase/firestore';
@@ -30,7 +31,9 @@ export const ListingDetailScreen: React.FC = () => {
     currentUser,
     loginWithGoogle,
     openChatThread,
-    showToast
+    showToast,
+    blockUser,
+    isUserBlocked
   } = useApp();
 
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
@@ -267,24 +270,36 @@ export const ListingDetailScreen: React.FC = () => {
 
           {/* Video Preview if Available */}
           {selectedListing.video && (
-            <div className="p-3 bg-amber-50/50 border-t border-stone-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-orange-600 text-white flex items-center justify-center">
-                  <Video className="w-4 h-4" />
+            <div className="p-3 bg-stone-900 text-white border-t border-stone-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-orange-600 text-white flex items-center justify-center">
+                    <Video className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white">{t.videoTour}</div>
+                    <div className="text-[10px] text-stone-400">{lang === 'te' ? 'ప్రత్యక్ష వీడియో క్లిప్' : 'Live Video Tour'}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-stone-900">{t.videoTour}</div>
-                  <div className="text-[11px] text-stone-500">{lang === 'te' ? '30 సెకన్ల వీడియో చూడండి' : 'Watch video clip of this listing'}</div>
-                </div>
+                {selectedListing.video.startsWith('http') && (
+                  <a
+                    href={selectedListing.video}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-orange-600 hover:bg-orange-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                  >
+                    {lang === 'te' ? 'ఓపెన్ లింక్' : 'Open Link'}
+                  </a>
+                )}
               </div>
-              <a
-                href={selectedListing.video}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs"
-              >
-                {lang === 'te' ? 'వీడియో చూడండి' : 'Play Video'}
-              </a>
+              <div className="rounded-xl overflow-hidden bg-black aspect-video max-h-64">
+                <video
+                  src={selectedListing.video}
+                  controls
+                  playsInline
+                  className="w-full h-full object-contain"
+                />
+              </div>
             </div>
           )}
         </div>

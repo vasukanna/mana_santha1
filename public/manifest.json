@@ -1,22 +1,23 @@
 {
-  "short_name": "SanthaKart",
-  "name": "SanthaKart - Mana Santha | మన సంత మార్కెట్",
-  "description": "Andhra Pradesh's premier online agricultural and local rural marketplace for farmers, traders, livestock owners, and buyers.",
+  "name": "Santhalo",
+  "short_name": "Santhalo",
   "start_url": "/",
-  "background_color": "#ffffff",
-  "theme_color": "#ea580c",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
   "icons": [
     {
-      "src": "/logo.png",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "sizes": "192x192"
+      "purpose": "any maskable"
     },
     {
-      "src": "/logo.png",
+      "src": "/icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "any maskable"
     }
   ]
 }

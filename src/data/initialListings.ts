@@ -79,8 +79,8 @@ export const INITIAL_LISTINGS: Listing[] = [
     negotiable: true,
     quantity: "12 పొట్టేళ్లు",
     images: [
-      "https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=1200&q=80"
+      "/assets/nellore_jodipi_1.jpg",
+      "/assets/nellore_jodipi_2.jpg"
     ],
     district: "Nellore (SPSR Nellore)",
     mandal: "Kavali",

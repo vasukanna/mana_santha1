@@ -12,6 +12,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -49,6 +50,10 @@ interface AppContextType {
   logout: () => Promise<void>;
   updateProfileData: (data: Partial<UserProfile>) => Promise<void>;
   deleteUserAccount: () => Promise<void>;
+  blockedUserIds: string[];
+  blockUser: (userId: string, userName?: string) => Promise<void>;
+  unblockUser: (userId: string) => Promise<void>;
+  isUserBlocked: (userId: string) => boolean;
   authModalOpen: boolean;
   setAuthModalOpen: (open: boolean) => void;
   authErrorDetail: { code?: string; message?: string } | null;
@@ -142,6 +147,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [savedIds, setSavedIds] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem('santhakart_saved');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Blocked Users (Google Play Safety Compliance)
+  const [blockedUserIds, setBlockedUserIds] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('santhakart_blocked');
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -437,22 +452,82 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Delete User Account (Play Store Compliance)
+  // Delete User Account & Their Posts (Google Play Store Compliance)
   const deleteUserAccount = async () => {
     if (!currentUser) return;
     try {
       const userUid = currentUser.uid;
-      // Mark listings as removed or delete user doc
-      const userDocRef = doc(db, 'users', userUid);
-      await deleteDoc(userDocRef);
+
+      // 1. Delete all listings posted by this user from Firestore
+      try {
+        const userListingsQ = query(collection(db, 'listings'), where('sellerId', '==', userUid));
+        const snap = await getDocs(userListingsQ);
+        for (const docItem of snap.docs) {
+          await deleteDoc(docItem.ref);
+        }
+      } catch (listErr) {
+        console.warn('Error purging user listings during account deletion:', listErr);
+      }
+
+      // Also remove local state listings
+      setListings(prev => prev.filter(l => l.sellerId !== userUid));
+
+      // 2. Delete user profile doc from Firestore
+      try {
+        const userDocRef = doc(db, 'users', userUid);
+        await deleteDoc(userDocRef);
+      } catch (docErr) {
+        console.warn('Error deleting user document:', docErr);
+      }
+
+      // 3. Delete Firebase Auth user account if possible
+      if (auth.currentUser) {
+        try {
+          await auth.currentUser.delete();
+        } catch (authDelErr) {
+          console.warn('Firebase Auth user delete warning:', authDelErr);
+        }
+      }
+
+      // 4. Clear local session & sign out
+      localStorage.removeItem('santhakart_quick_session');
       await fbSignOut(auth);
       setCurrentUser(null);
       setUserProfile(null);
-      showToast(lang === 'te' ? 'మీ ఖాతా శాశ్వతంగా తొలగించబడింది.' : 'Your account has been deleted.');
+      setActiveTab('home');
+      showToast(
+        lang === 'te'
+          ? 'మీ ఖాతా మరియు పోస్ట్ చేసిన ప్రకటనలు శాశ్వతంగా తొలగించబడ్డాయి.'
+          : 'Your account and all posted listings have been permanently deleted.'
+      );
     } catch (error) {
       console.error('Account deletion error:', error);
       showToast('Error deleting account');
     }
+  };
+
+  // Block & Unblock Users (Google Play Safety Compliance)
+  const blockUser = async (userId: string, userName?: string) => {
+    if (!userId) return;
+    const updated = Array.from(new Set([...blockedUserIds, userId]));
+    setBlockedUserIds(updated);
+    localStorage.setItem('santhakart_blocked', JSON.stringify(updated));
+    showToast(
+      lang === 'te'
+        ? `${userName || 'యూజర్'} బ్లాక్ చేయబడ్డారు. వారి ప్రకటనలు మరియు సందేశాలు ఇకపై కనిపించవు.`
+        : 'User blocked. Their listings and messages are now hidden.'
+    );
+  };
+
+  const unblockUser = async (userId: string) => {
+    const updated = blockedUserIds.filter(id => id !== userId);
+    setBlockedUserIds(updated);
+    localStorage.setItem('santhakart_blocked', JSON.stringify(updated));
+    showToast(lang === 'te' ? 'యూజర్‌ను అన్‌బ్లాక్ చేసారు.' : 'User unblocked.');
+  };
+
+  const isUserBlocked = (userId: string) => {
+    return blockedUserIds.includes(userId);
   };
 
   // Open Listing
@@ -656,6 +731,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         logout,
         updateProfileData,
         deleteUserAccount,
+        blockedUserIds,
+        blockUser,
+        unblockUser,
+        isUserBlocked,
         authModalOpen,
         setAuthModalOpen,
         authErrorDetail,

@@ -39,7 +39,8 @@ export const HomeScreen: React.FC = () => {
     onlyVerified,
     setOnlyVerified,
     setActiveTab,
-    appConfig
+    appConfig,
+    blockedUserIds
   } = useApp();
 
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -48,6 +49,11 @@ export const HomeScreen: React.FC = () => {
   const filteredListings = useMemo(() => {
     return listings
       .filter((listing) => {
+        // Exclude blocked users (Google Play Safety)
+        if (blockedUserIds && blockedUserIds.includes(listing.sellerId)) {
+          return false;
+        }
+
         // District filter
         if (selectedDistrict && listing.district !== selectedDistrict) {
           if (!listing.district.toLowerCase().includes(selectedDistrict.toLowerCase())) {

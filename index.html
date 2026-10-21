@@ -2,23 +2,36 @@
 <html lang="te">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#ea580c" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#16a34a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="apple-touch-icon" href="/logo.png" />
-    <title>SanthaKart - Mana Santha | మన సంత మార్కెట్</title>
-    <meta name="description" content="Mana Santha - Andhra Pradesh's premier online agricultural and local rural marketplace for farmers, traders, livestock owners, and buyers. Everyone Connected. Every Need Met." />
-    <meta property="og:title" content="SanthaKart - Mana Santha | మన సంత" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Santhalo - Mana Santha | మన సంత మార్కెట్</title>
+    <meta name="description" content="Santhalo - Andhra Pradesh's premier online agricultural and local rural marketplace for farmers, traders, livestock owners, and buyers. Everyone Connected. Every Need Met." />
+    <meta property="og:title" content="Santhalo - Mana Santha | మన సంత" />
     <meta property="og:description" content="Buy and sell Livestock, Crops, Aqua, Machinery, Vegetables, and Land directly across AP villages and towns." />
-    <meta property="og:image" content="/logo.png" />
+    <meta property="og:image" content="/icon-512.png" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Tiro+Telugu:ital@0;1&family=Ramabhadra&display=swap" rel="stylesheet">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(reg) {
+              console.log('Santhalo ServiceWorker registered:', reg.scope);
+            })
+            .catch(function(err) {
+              console.warn('ServiceWorker registration error:', err);
+            });
+        });
+      }
+    </script>
   </head>
   <body class="bg-stone-50 text-stone-900 select-none antialiased overscroll-none min-h-screen">
     <div id="root"></div>

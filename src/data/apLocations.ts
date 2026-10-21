@@ -54,8 +54,8 @@ export const AP_DISTRICTS: DistrictInfo[] = [
         ]
       },
       {
-        name: "Nellore Urban & Rural",
-        te: "నెల్లూరు అర్బన్ & రూరల్",
+        name: "Nellore Urban",
+        te: "నెల్లూరు అర్బన్",
         villages: [
           { name: "Vedayapalem", te: "వేదాయపాళెం" },
           { name: "Dargamitta", te: "దర్గామిట్ట" },
@@ -63,11 +63,23 @@ export const AP_DISTRICTS: DistrictInfo[] = [
           { name: "Pogathota", te: "పొగతోట" },
           { name: "Kallurpalli", te: "కల్లూరుపల్లి" },
           { name: "Buja Buja Nellore", te: "బుజ బుజ నెల్లూరు" },
+          { name: "Santhapet", te: "సంతపేట" },
+          { name: "Magunta Layout", te: "మగుంట లేఅవుట్" },
+          { name: "Stonehousepet", te: "స్టోన్‌హౌస్‌పేట" }
+        ]
+      },
+      {
+        name: "Nellore Rural",
+        te: "నెల్లూరు రూరల్",
+        villages: [
           { name: "South Mopur", te: "సౌత్ మోపూరు" },
           { name: "Chinthareddypalem", te: "చింతారెడ్డిపాలెం" },
           { name: "Amancherla", te: "అమంచర్ల" },
           { name: "Devarapalem", te: "దేవరపాలెం" },
-          { name: "Golagamudi", te: "గొలగమూడి" }
+          { name: "Golagamudi", te: "గొలగమూడి" },
+          { name: "Kakutur", te: "కాకుటూరు" },
+          { name: "Kothur", te: "కొత్తూరు" },
+          { name: "Ambapuram", te: "అంబాపురం" }
         ]
       },
       {
@@ -481,6 +493,92 @@ export const AP_DISTRICTS: DistrictInfo[] = [
           { name: "Narukuru", te: "నరుకూరు" },
           { name: "Peddacherukuru", te: "పెద్దచెరుకూరు" },
           { name: "Venkannapalem", te: "వెంకన్నపాలెం" }
+        ]
+      },
+      {
+        name: "Kandukur",
+        te: "కందుకూరు",
+        villages: [
+          { name: "Kandukur Town", te: "కందుకూరు టౌన్" },
+          { name: "Ananthasagaram", te: "అనంతసాగరం" },
+          { name: "Kovur", te: "కోవూరు" },
+          { name: "Madanagopalapuram", te: "మదనగోపాలపురం" },
+          { name: "Oguru", te: "ఓగూరు" },
+          { name: "Palukuru", te: "పలుకూరు" },
+          { name: "Vikkirala Peta", te: "విక్కిరాలపేట" }
+        ]
+      },
+      {
+        name: "Lingasamudram",
+        te: "లింగసముద్రం",
+        villages: [
+          { name: "Lingasamudram", te: "లింగసముద్రం" },
+          { name: "Chilagathota", te: "చిలగతోట" },
+          { name: "Gangapalem", te: "గంగపాలెం" },
+          { name: "Muthyala Padu", te: "ముత్యాలపాడు" },
+          { name: "Thimmanapalem", te: "తిమ్మనపాలెం" },
+          { name: "Vengalapuram", te: "వెంగళాపురం" }
+        ]
+      },
+      {
+        name: "Gudluru",
+        te: "గుడ్లూరు",
+        villages: [
+          { name: "Gudluru", te: "గుడ్లూరు" },
+          { name: "Basireddypalem", te: "బసిరెడ్డిపాలెం" },
+          { name: "Chejarla", te: "చేజర్ల" },
+          { name: "Kothapeta", te: "కొత్తపేట" },
+          { name: "Mocherla", te: "మోచెర్ల" },
+          { name: "Pottempadu", te: "పొట్టెంపాడు" }
+        ]
+      },
+      {
+        name: "Ulavapadu",
+        te: "ఉలవపాడు",
+        villages: [
+          { name: "Ulavapadu", te: "ఉలవపాడు" },
+          { name: "Atmakuru", te: "ఆత్మకూరు" },
+          { name: "Bheemavaram", te: "భీమవరం" },
+          { name: "Chagollu", te: "చాగోలు" },
+          { name: "Karedu", te: "కారేడు" },
+          { name: "Manneti Kota", te: "మన్నేటికోట" },
+          { name: "Ramayapatnam", te: "రామాయపట్నం" }
+        ]
+      },
+      {
+        name: "Voletivaripalem",
+        te: "వోలేటివారిపాలెం",
+        villages: [
+          { name: "Voletivaripalem", te: "వోలేటివారిపాలెం" },
+          { name: "Chundi", te: "చుండి" },
+          { name: "Kunkupadu", te: "కుంకుపాడు" },
+          { name: "Nallaguntla", te: "నల్లగుంట్ల" },
+          { name: "Pokuru", te: "పోకూరు" },
+          { name: "Sakhavaram", te: "శాఖవరం" }
+        ]
+      },
+      {
+        name: "Kondapi",
+        te: "కొండపి",
+        villages: [
+          { name: "Kondapi", te: "కొండపి" },
+          { name: "Anakarlapudi", te: "అనకర్లపూడి" },
+          { name: "Chinna Kandukur", te: "చిన్న కందుకూరు" },
+          { name: "Guravajipeta", te: "గురవాజిపేట" },
+          { name: "Nenurupadu", te: "నెనూరుపాడు" },
+          { name: "Petlur", te: "పెట్లూరు" }
+        ]
+      },
+      {
+        name: "Zarugumilli",
+        te: "జరుగుమిల్లి",
+        villages: [
+          { name: "Zarugumilli", te: "జరుగుమిల్లి" },
+          { name: "Chavakali", te: "చావకలి" },
+          { name: "Kamepalli", te: "కామేపల్లి" },
+          { name: "Nandipadu", te: "నందిపాడు" },
+          { name: "Pavuluru", te: "పావులూరు" },
+          { name: "Vangapadu", te: "వంగపాడు" }
         ]
       }
     ]
