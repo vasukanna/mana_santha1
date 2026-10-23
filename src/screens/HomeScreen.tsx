@@ -135,7 +135,7 @@ export const HomeScreen: React.FC = () => {
         */}
         <div className="relative rounded-3xl overflow-hidden shadow-xs border border-emerald-200/60 select-none bg-emerald-50">
           <img
-            src="/assets/santha_banner_full_hd.png"
+            src="/assets/santha_banner_full.png"
             alt="One Santha. Endless Connections. Buy and sell livestock, grains, produce and farm machinery near you."
             className="w-full h-auto object-cover block select-none pointer-events-none"
           />
