@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import {
+  initializeFirestore,
   getFirestore,
   doc,
   getDocFromServer,
@@ -25,11 +26,33 @@ import firebaseConfig from '../firebase-applet-config.json';
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Services
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Initialize Services with ignoreUndefinedProperties enabled to guarantee setDoc never crashes
+export const db = initializeFirestore(app, {
+  ignoreUndefinedProperties: true
+}, firebaseConfig.firestoreDatabaseId);
+
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
+
+/**
+ * Strips all undefined properties recursively from an object before Firestore writes.
+ * Ensures setDoc never receives undefined fields under any circumstances.
+ */
+export function stripUndefined<T extends Record<string, any>>(obj: T): T {
+  const clean: any = Array.isArray(obj) ? [] : {};
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (val === undefined) {
+      continue;
+    } else if (val !== null && typeof val === 'object' && !(val instanceof Date)) {
+      clean[key] = stripUndefined(val);
+    } else {
+      clean[key] = val;
+    }
+  }
+  return clean as T;
+}
 
 // Operation Types as defined in Firebase Skill
 export enum OperationType {
@@ -102,7 +125,7 @@ export async function compressImage(file: File, maxSizeMB = 0.9): Promise<string
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        const maxDimension = 1400;
+        const maxDimension = 1000; // About 1000px width as requested
 
         if (width > maxDimension || height > maxDimension) {
           if (width > height) {

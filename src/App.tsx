@@ -13,17 +13,27 @@ import { SavedItemsScreen } from './screens/SavedItemsScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { AdminScreen } from './screens/AdminScreen';
 import { SafetyPolicyScreen } from './screens/SafetyPolicyScreen';
+import { PrivacyPolicyScreen } from './screens/PrivacyPolicyScreen';
+import { DownloadScreen } from './screens/DownloadScreen';
 import { PremiumFeaturesModal } from './screens/PremiumFeaturesModal';
 import { AuthModal } from './components/AuthModal';
+import { PWAInstallBanner } from './components/PWAInstallBanner';
+import { PWAUpdateBanner } from './components/PWAUpdateBanner';
 import { testConnection } from './firebase';
 
 const MainApp: React.FC = () => {
-  const { activeTab, toastMessage } = useApp();
+  const { activeTab, setActiveTab, toastMessage } = useApp();
 
-  // Test Firestore connection on boot
+  // Test Firestore connection on boot & handle /privacy and /download routes
   useEffect(() => {
     testConnection();
-  }, []);
+    const path = window.location.pathname;
+    if (path === '/privacy' || path === '/privacy.html') {
+      setActiveTab('privacy');
+    } else if (path === '/download' || path === '/download.html') {
+      setActiveTab('download');
+    }
+  }, [setActiveTab]);
 
   const renderActiveScreen = () => {
     switch (activeTab) {
@@ -49,6 +59,11 @@ const MainApp: React.FC = () => {
         return <AdminScreen />;
       case 'safety_policy':
         return <SafetyPolicyScreen />;
+      case 'privacy':
+      case 'privacy_policy':
+        return <PrivacyPolicyScreen />;
+      case 'download':
+        return <DownloadScreen />;
       case 'premium_features':
         return <PremiumFeaturesModal />;
       default:
@@ -56,11 +71,11 @@ const MainApp: React.FC = () => {
     }
   };
 
-  const showHeader = activeTab !== 'chat_detail' && activeTab !== 'listing_detail';
+  const showHeader = activeTab !== 'chat_detail' && activeTab !== 'listing_detail' && activeTab !== 'privacy' && activeTab !== 'download';
   const showBottomNav = activeTab !== 'chat_detail';
 
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col antialiased">
+    <div className="min-h-screen bg-[#faf8f5] flex flex-col antialiased">
       {/* Global Header */}
       {showHeader && <Header />}
 
@@ -69,8 +84,14 @@ const MainApp: React.FC = () => {
         {renderActiveScreen()}
       </main>
 
-      {/* Capacitor-ready Bottom Navigation */}
+      {/* Mobile Bottom Navigation */}
       {showBottomNav && <BottomNav />}
+
+      {/* PWA Install Banner (Android & iOS) */}
+      <PWAInstallBanner />
+
+      {/* PWA Update Notification Banner */}
+      <PWAUpdateBanner />
 
       {/* Global Auth Troubleshooting & Sign-In Modal */}
       <AuthModal />

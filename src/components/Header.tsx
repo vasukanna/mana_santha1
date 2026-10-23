@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { BrandLogo } from './BrandLogo';
 import { AP_DISTRICTS } from '../data/apLocations';
-import { MapPin, Globe, Sparkles, Bookmark, ShieldCheck, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { MapPin, Globe, Sparkles, Bookmark, ShieldCheck, ChevronDown, CheckCircle2, User, Download } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const {
     lang,
     setLang,
     t,
+    currentUser,
     selectedDistrict,
     setSelectedDistrict,
     selectedMandal,
@@ -25,81 +26,42 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-orange-100/80 shadow-xs">
-        {/* Launch Offer Ticker Bar */}
-        <div className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white text-xs py-1.5 px-3 flex items-center justify-between font-medium shadow-inner">
-          <div className="flex items-center gap-1.5 truncate">
-            <span className="bg-white/20 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
-              {t.freeBadge}
-            </span>
-            <span className="truncate font-semibold text-orange-50">
-              {t.launchOfferTitle} ({t.launchOfferDesc} {appConfig.freeUntil})
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Language Toggle Button - Big & Clear */}
-            <button
-              onClick={() => setLang(lang === 'te' ? 'en' : 'te')}
-              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-2.5 py-0.5 rounded-full transition-all active:scale-95 border border-white/30 cursor-pointer shadow-xs"
-              title="భాష మార్చండి / Change Language"
-            >
-              <Globe className="w-3.5 h-3.5 text-amber-200" />
-              <span>{lang === 'te' ? 'English' : 'తెలుగు'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Main Header Bar */}
-        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
-          {/* Brand Logo */}
+      <header className="sticky top-0 z-40 bg-white border-b border-stone-100 shadow-xs">
+        {/* Main Header Bar - Clean matching screenshots */}
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
+          {/* Brand Logo with Tagline */}
           <div
             onClick={() => setActiveTab('home')}
             className="cursor-pointer active:scale-98 transition-transform"
           >
-            <BrandLogo size="md" showTagline={true} lang={lang} />
+            <BrandLogo size="md" showTagline={true} lang={lang} layout="vertical" />
           </div>
 
-          {/* District Selector & Shortcuts */}
-          <div className="flex items-center gap-2">
-            {/* District Quick Button */}
+          {/* Right Action Pills matching screenshots */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* District Selector Pill */}
             <button
               onClick={() => setShowDistrictModal(true)}
-              className="flex items-center gap-1.5 bg-orange-50/80 hover:bg-orange-100/80 text-orange-950 text-xs font-bold px-3 py-2 rounded-2xl border border-orange-200 active:scale-95 transition-all max-w-[145px] sm:max-w-[210px] shadow-xs"
+              className="flex items-center gap-1 bg-white hover:bg-stone-50 text-stone-800 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-full border border-stone-300 active:scale-95 transition-all max-w-[130px] sm:max-w-[190px] shadow-xs cursor-pointer min-h-[38px]"
             >
-              <MapPin className="w-4 h-4 text-orange-600 flex-shrink-0" />
-              <span className="truncate">
+              <MapPin className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
+              <span className="truncate text-[11px] sm:text-xs">
                 {selectedDistrict
                   ? (lang === 'te' ? currentDistrictObj?.te || selectedDistrict : currentDistrictObj?.name || selectedDistrict)
-                  : t.allDistricts}
+                  : (lang === 'te' ? 'ఆంధ్రప్రదేశ్ మొత్తం' : 'All Andhra Pradesh')}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-orange-600/70 flex-shrink-0" />
+              <ChevronDown className="w-3 h-3 text-stone-500 shrink-0" />
             </button>
 
-            {/* Saved Shortcut */}
+            {/* Language Selector Pill - Always visible matching screenshot */}
             <button
-              onClick={() => setActiveTab('saved')}
-              className="relative p-2.5 text-stone-600 hover:text-orange-600 hover:bg-orange-50 rounded-2xl border border-transparent hover:border-orange-200 transition-colors cursor-pointer"
-              title={t.savedTitle}
+              onClick={() => setLang(lang === 'te' ? 'en' : 'te')}
+              className="flex items-center gap-1.5 bg-white hover:bg-stone-50 text-emerald-800 text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-full border border-stone-300 active:scale-95 transition-all shadow-xs cursor-pointer min-h-[38px] shrink-0"
+              title="భాష మార్చండి / Change Language"
             >
-              <Bookmark className="w-5 h-5" />
-              {savedIds.length > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-orange-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-xs">
-                  {savedIds.length}
-                </span>
-              )}
+              <Globe className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
+              <span className="font-extrabold">{lang === 'te' ? 'English' : 'తెలుగు'}</span>
             </button>
-
-            {/* Admin Badge if Admin */}
-            {isAdmin && (
-              <button
-                onClick={() => setActiveTab('admin')}
-                className="bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 px-2.5 py-1.5 rounded-2xl text-xs font-black flex items-center gap-1 active:scale-95 cursor-pointer shadow-xs"
-              >
-                <ShieldCheck className="w-4 h-4 text-amber-700" />
-                <span className="hidden sm:inline">Admin</span>
-              </button>
-            )}
           </div>
         </div>
       </header>
@@ -189,16 +151,16 @@ export const Header: React.FC = () => {
                             : 'border-stone-200 hover:border-orange-400 bg-white hover:bg-orange-50/20 shadow-xs'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full">
-                          <span className="font-extrabold text-sm text-stone-900">
-                            {lang === 'te' ? district.te : district.name}
+                        <div className="flex items-center justify-between w-full notranslate" translate="no">
+                          <span className="font-extrabold text-sm text-stone-900 notranslate" translate="no">
+                            {lang === 'te' ? `${district.name} (${district.te})` : district.name}
                           </span>
-                          <span className="text-[10px] font-black bg-orange-100 text-orange-800 px-2 py-0.5 rounded-md">
+                          <span className="text-[10px] font-black bg-orange-100 text-orange-800 px-2 py-0.5 rounded-md notranslate" translate="no">
                             {district.mandals.length} {lang === 'te' ? 'మండలాలు' : 'Mandals'}
                           </span>
                         </div>
-                        <span className="text-[11px] text-stone-500 mt-1.5 line-clamp-1 font-medium">
-                          {district.mandals.map(m => lang === 'te' ? m.te : m.name).slice(0, 4).join(', ')}...
+                        <span className="text-[11px] text-stone-500 mt-1.5 line-clamp-1 font-medium notranslate" translate="no">
+                          {district.mandals.map(m => m.name).slice(0, 5).join(', ')}...
                         </span>
                       </button>
                     );
@@ -223,14 +185,15 @@ export const Header: React.FC = () => {
                           setSelectedMandal('');
                           setShowDistrictModal(false);
                         }}
-                        className={`p-2.5 rounded-xl text-left border text-xs transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-xl text-left border text-xs transition-all cursor-pointer notranslate ${
                           isSelected
                             ? 'border-orange-600 bg-orange-50 font-bold text-orange-900'
                             : 'border-stone-200 hover:border-stone-300 text-stone-700 bg-white'
                         }`}
+                        translate="no"
                       >
-                        <div className="truncate font-semibold">
-                          {lang === 'te' ? district.te : district.name}
+                        <div className="truncate font-semibold notranslate" translate="no">
+                          {lang === 'te' ? `${district.name.split(' ')[0]} (${district.te.split(' ')[0]})` : district.name}
                         </div>
                       </button>
                     );

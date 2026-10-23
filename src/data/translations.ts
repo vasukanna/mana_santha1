@@ -67,7 +67,7 @@ export const translations = {
     safetyTip2: "ముందస్తుగా ఆన్‌లైన్ అడ్వాన్స్ లేదా OTPలు ఎవరికీ పంపవద్దు.",
 
     // Sell Form
-    postAdTitle: "మీ ప్రకటనను పోస్ట్ చేయండి",
+    postAdTitle: "ఒకే సంత. అనంత అనుసంధానాలు (One Santha. Endless Connections)",
     selectCategory: "కేటగిరీని ఎంచుకోండి",
     selectSubcategory: "సబ్-కేటగిరీని ఎంచుకోండి",
     adTitle: "ప్రకటన శీర్షిక (పేరు)",
@@ -223,7 +223,7 @@ export const translations = {
     safetyTip2: "Never send advances or OTPs online to unknown individuals.",
 
     // Sell Form
-    postAdTitle: "Post Your Listing",
+    postAdTitle: "One Santha. Endless Connections",
     selectCategory: "Select Category",
     selectSubcategory: "Select Subcategory",
     adTitle: "Listing Title",

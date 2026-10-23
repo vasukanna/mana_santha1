@@ -5,7 +5,8 @@ import {
   db,
   googleProvider,
   OperationType,
-  handleFirestoreError
+  handleFirestoreError,
+  stripUndefined
 } from '../firebase';
 import { signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'firebase/auth';
 import {
@@ -74,6 +75,7 @@ interface AppContextType {
   createListing: (listingData: Omit<Listing, 'id' | 'createdAt'>) => Promise<string>;
   updateListingStatus: (listingId: string, status: 'active' | 'sold' | 'removed') => Promise<void>;
   deleteListing: (listingId: string) => Promise<void>;
+  renewListing: (listingId: string) => Promise<void>;
   toggleFeatureListing: (listingId: string, featured: boolean) => Promise<void>;
   incrementContactCount: (listingId: string, type: 'call' | 'whatsapp') => Promise<void>;
 
@@ -553,34 +555,97 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Create Listing
   const createListing = async (listingData: Omit<Listing, 'id' | 'createdAt'>): Promise<string> => {
-    if (!currentUser) throw new Error('User not authenticated');
+    if (!currentUser) {
+      showToast(lang === 'te' ? 'దయచేసి ప్రకటన పోస్ట్ చేయడానికి సైన్ ఇన్ అవ్వండి.' : 'Please sign in to post an ad.');
+      throw new Error('User not authenticated');
+    }
     
     // Check free post limit if subscription enabled
     if (appConfig.subscriptionEnabled) {
       const userListings = listings.filter(l => l.sellerId === currentUser.uid && l.status === 'active');
       if (userListings.length >= appConfig.freePostLimit) {
-        throw new Error(`Free limit of ${appConfig.freePostLimit} active posts reached.`);
+        const limitMsg = lang === 'te' 
+          ? `గరిష్టంగా ${appConfig.freePostLimit} ఉచిత ప్రకటనల పరిమితి చేరింది.` 
+          : `Free limit of ${appConfig.freePostLimit} active posts reached.`;
+        showToast(limitMsg);
+        throw new Error(limitMsg);
       }
     }
 
     try {
       const newDocRef = doc(collection(db, 'listings'));
-      const newListing: Listing = {
-        ...listingData,
+      const now = new Date();
+      // 30 days expiry
+      const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      // Build listing with safe defaults for every single field to prevent any Firestore undefined error
+      const rawListing: Record<string, any> = {
         id: newDocRef.id,
-        createdAt: new Date().toISOString(),
+        sellerId: currentUser.uid || '',
+        sellerName: listingData.sellerName || currentUser.displayName || 'రైతు మిత్రుడు',
+        sellerPhone: listingData.sellerPhone || userProfile?.phone || '',
+        category: listingData.category || 'grains_millets',
+        subcategory: listingData.subcategory || '',
+        title: (listingData.title || '').trim(),
+        description: (listingData.description || '').trim(),
+        price: Number(listingData.price) || 0,
+        priceUnit: listingData.priceUnit || 'per quintal',
+        negotiable: Boolean(listingData.negotiable),
+        quantity: listingData.quantity || '',
+        quantityUnit: listingData.quantityUnit || '',
+        images: Array.isArray(listingData.images) && listingData.images.length > 0 ? listingData.images : [],
+        video: listingData.video || '',
+        district: listingData.district || 'Nellore (SPSR Nellore)',
+        mandal: listingData.mandal || '',
+        village: listingData.village || '',
+        status: 'active',
+        featured: Boolean(listingData.featured),
+        customFields: listingData.customFields || {},
+        createdAt: now.toISOString(),
+        expiresAt: expiresAt,
         viewsCount: 1,
         callsCount: 0,
         whatsappCount: 0
       };
 
-      await setDoc(newDocRef, newListing);
-      setListings(prev => [newListing, ...prev]);
-      showToast(lang === 'te' ? 'మీ ప్రకటన విజయవంతంగా పోస్ట్ చేయబడింది!' : 'Your listing is live now!');
+      // Ensure no undefined values exist
+      const cleanListing = stripUndefined(rawListing) as Listing;
+      console.log('Posting safe listing to Firestore listings/' + newDocRef.id, cleanListing);
+
+      await setDoc(newDocRef, cleanListing);
+      setListings(prev => [cleanListing, ...prev]);
+      showToast(lang === 'te' ? 'మీ ప్రకటన విజయవంతంగా పోస్ట్ చేయబడింది!' : 'Your ad is posted successfully!');
       return newDocRef.id;
     } catch (error) {
+      console.error('Failed to post ad:', error);
+      showToast(lang === 'te' 
+        ? 'ప్రకటన పోస్ట్ చేయడంలో సమస్య వచ్చింది. దయచేసి వివరాలు సరిచూసి మళ్లీ ప్రయత్నించండి.' 
+        : 'Could not post ad. Please verify details and try again.');
       handleFirestoreError(error, OperationType.CREATE, 'listings');
       throw error;
+    }
+  };
+
+  // Renew listing for 30 more days
+  const renewListing = async (listingId: string) => {
+    try {
+      const now = new Date();
+      const newExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      if (!listingId.startsWith('init_')) {
+        const ref = doc(db, 'listings', listingId);
+        await updateDoc(ref, {
+          status: 'active',
+          createdAt: now.toISOString(),
+          expiresAt: newExpiry
+        });
+      }
+      setListings(prev =>
+        prev.map(item => (item.id === listingId ? { ...item, status: 'active', createdAt: now.toISOString(), expiresAt: newExpiry } : item))
+      );
+      showToast(lang === 'te' ? 'మీ ప్రకటన 30 రోజులకు పునరుద్ధరించబడింది!' : 'Listing renewed for 30 days!');
+    } catch (e) {
+      console.error('Renew error:', e);
+      showToast(lang === 'te' ? 'ప్రకటన పునరుద్ధరణ విఫలమైంది.' : 'Failed to renew listing.');
     }
   };
 
@@ -753,6 +818,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createListing,
         updateListingStatus,
         deleteListing,
+        renewListing,
         toggleFeatureListing,
         incrementContactCount,
 

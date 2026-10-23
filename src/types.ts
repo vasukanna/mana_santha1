@@ -24,17 +24,20 @@ export interface Listing {
   title: string;
   description: string;
   price: number;
+  priceUnit?: string; // per kg, per quintal, per ton, per piece, per acre, total
   negotiable: boolean;
   quantity?: string;
+  quantityUnit?: string;
   images: string[];
   video?: string;
   district: string;
   mandal: string;
   village: string;
-  status: 'active' | 'sold' | 'removed';
+  status: 'active' | 'sold' | 'removed' | 'expired';
   featured: boolean;
   customFields?: Record<string, any>;
   createdAt: string;
+  expiresAt?: string; // 30 days after creation for auto-expiry
   viewsCount?: number;
   callsCount?: number;
   whatsappCount?: number;

@@ -43,11 +43,18 @@ service cloud.firestore {
       allow delete: if isOwner(userId) || isAdmin();
     }
 
-    // Listings: public read of active listings, owner or admin can edit/delete
+    // Listings: public read of active listings, owner or admin can edit/delete, validate field types and lengths
     match /listings/{listingId} {
       allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.sellerId == request.auth.uid;
-      allow update: if isSignedIn() && (resource.data.sellerId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() 
+        && request.resource.data.sellerId == request.auth.uid
+        && request.resource.data.title is string 
+        && request.resource.data.title.size() <= 60
+        && request.resource.data.price is number
+        && (!('description' in request.resource.data) || request.resource.data.description.size() <= 400);
+      allow update: if isSignedIn() 
+        && (resource.data.sellerId == request.auth.uid || isAdmin())
+        && (!('title' in request.resource.data) || (request.resource.data.title is string && request.resource.data.title.size() <= 60));
       allow delete: if isSignedIn() && (resource.data.sellerId == request.auth.uid || isAdmin());
     }
 

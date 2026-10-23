@@ -38,6 +38,7 @@ export const ListingDetailScreen: React.FC = () => {
 
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showBlockModal, setShowBlockModal] = useState(false);
   const [reportReason, setReportReason] = useState('fraud');
   const [reportDetails, setReportDetails] = useState('');
   const [reportSubmitting, setReportSubmitting] = useState(false);
@@ -309,12 +310,17 @@ export const ListingDetailScreen: React.FC = () => {
           {/* Price & Negotiable */}
           <div className="flex items-baseline justify-between gap-2">
             <div>
-              <div className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+              <div className="text-2xl sm:text-3xl font-black text-emerald-800 tracking-tight">
                 {formattedPrice}
+                {selectedListing.priceUnit && (
+                  <span className="text-sm font-semibold text-emerald-700/80 ml-1.5">
+                    /{selectedListing.priceUnit}
+                  </span>
+                )}
               </div>
               {selectedListing.quantity && (
-                <div className="text-xs font-semibold text-stone-500 mt-0.5">
-                  {selectedListing.quantity}
+                <div className="text-xs font-bold text-stone-700 bg-stone-100 px-2 py-0.5 rounded-md mt-1 inline-block">
+                  {lang === 'te' ? 'పరిమాణం:' : 'Qty:'} {selectedListing.quantity} {selectedListing.quantityUnit || ''}
                 </div>
               )}
             </div>
@@ -424,14 +430,22 @@ export const ListingDetailScreen: React.FC = () => {
           </ul>
         </div>
 
-        {/* Report Button */}
-        <div className="text-center pt-2">
+        {/* Safety & UGC Actions: Report & Block Seller */}
+        <div className="flex items-center justify-center gap-6 pt-2 pb-1">
           <button
             onClick={() => setShowReportModal(true)}
-            className="text-xs font-semibold text-stone-500 hover:text-red-600 inline-flex items-center gap-1 cursor-pointer"
+            className="text-xs font-semibold text-stone-500 hover:text-red-600 inline-flex items-center gap-1.5 cursor-pointer min-h-[44px] px-2"
           >
             <AlertTriangle className="w-3.5 h-3.5 text-stone-400" />
             <span>{t.reportAd}</span>
+          </button>
+          <span className="text-stone-300">•</span>
+          <button
+            onClick={() => setShowBlockModal(true)}
+            className="text-xs font-semibold text-stone-500 hover:text-red-600 inline-flex items-center gap-1.5 cursor-pointer min-h-[44px] px-2"
+          >
+            <UserX className="w-3.5 h-3.5 text-stone-400" />
+            <span>{lang === 'te' ? 'యూజర్‌ను బ్లాక్ చేయండి' : 'Block Seller'}</span>
           </button>
         </div>
       </div>
@@ -439,28 +453,28 @@ export const ListingDetailScreen: React.FC = () => {
       {/* Fixed Sticky Action Bar at Bottom (Call, WhatsApp, Chat) */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 shadow-xl safe-area-bottom">
         <div className="max-w-3xl mx-auto grid grid-cols-3 gap-2">
-          {/* Call Button */}
+          {/* Call Button - Vibrant Orange */}
           <button
             onClick={handleCall}
-            className="flex flex-col sm:flex-row items-center justify-center gap-1 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs py-2.5 px-3 rounded-2xl shadow-md active:scale-95 transition-all cursor-pointer"
+            className="flex flex-col sm:flex-row items-center justify-center gap-1 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs py-2.5 px-3 rounded-2xl shadow-md shadow-orange-600/25 active:scale-95 transition-all cursor-pointer min-h-[44px]"
           >
             <Phone className="w-4 h-4 fill-white" />
             <span>{t.callSeller}</span>
           </button>
 
-          {/* WhatsApp Button */}
+          {/* WhatsApp Button - Royal Blue */}
           <button
             onClick={handleWhatsApp}
-            className="flex flex-col sm:flex-row items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-2.5 px-3 rounded-2xl shadow-md active:scale-95 transition-all cursor-pointer"
+            className="flex flex-col sm:flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-xs py-2.5 px-3 rounded-2xl shadow-md shadow-blue-700/25 active:scale-95 transition-all cursor-pointer min-h-[44px]"
           >
             <MessageCircle className="w-4 h-4 fill-white" />
             <span>{t.whatsappSeller}</span>
           </button>
 
-          {/* In-app Chat Button */}
+          {/* In-app Chat Button - Deep Navy */}
           <button
             onClick={handleStartChat}
-            className="flex flex-col sm:flex-row items-center justify-center gap-1 bg-stone-900 hover:bg-black text-white font-extrabold text-xs py-2.5 px-3 rounded-2xl shadow-md active:scale-95 transition-all cursor-pointer"
+            className="flex flex-col sm:flex-row items-center justify-center gap-1 bg-blue-950 hover:bg-black text-white font-extrabold text-xs py-2.5 px-3 rounded-2xl shadow-md active:scale-95 transition-all cursor-pointer min-h-[44px]"
           >
             <MessageCircle className="w-4 h-4 text-orange-400" />
             <span>{t.chatSeller}</span>
@@ -514,16 +528,53 @@ export const ListingDetailScreen: React.FC = () => {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setShowReportModal(false)}
-                className="py-2.5 rounded-xl border border-stone-300 font-bold text-xs text-stone-700 hover:bg-stone-50"
+                className="py-2.5 rounded-xl border border-stone-300 font-bold text-xs text-stone-700 hover:bg-stone-50 min-h-[44px]"
               >
                 {lang === 'te' ? 'రద్దు' : 'Cancel'}
               </button>
               <button
                 onClick={submitReport}
                 disabled={reportSubmitting}
-                className="py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md"
+                className="py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md min-h-[44px]"
               >
                 {reportSubmitting ? '...' : (lang === 'te' ? 'సమర్పించండి' : 'Submit')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block Seller Modal */}
+      {showBlockModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-stone-200">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-3">
+              <UserX className="w-6 h-6" />
+            </div>
+            <h3 className="font-extrabold text-stone-900 text-base mb-1">
+              {lang === 'te' ? 'అమ్మకందారుని బ్లాక్ చేయాలా?' : 'Block this Seller?'}
+            </h3>
+            <p className="text-xs text-stone-600 mb-4 leading-relaxed">
+              {lang === 'te'
+                ? 'ఈ యూజర్‌ను బ్లాక్ చేస్తే, వారి నుంచి వచ్చే ప్రకటనలు మరియు సందేశాలు ఇకపై మీకు కనిపించవు.'
+                : 'Blocking this user will hide all their current listings and prevent them from contacting you.'}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setShowBlockModal(false)}
+                className="py-2.5 rounded-xl border border-stone-300 font-bold text-xs text-stone-700 hover:bg-stone-50 cursor-pointer min-h-[44px]"
+              >
+                {lang === 'te' ? 'రద్దు' : 'Cancel'}
+              </button>
+              <button
+                onClick={async () => {
+                  await blockUser(selectedListing.sellerId, selectedListing.sellerName);
+                  setShowBlockModal(false);
+                  setActiveTab('home');
+                }}
+                className="py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md cursor-pointer min-h-[44px]"
+              >
+                {lang === 'te' ? 'బ్లాక్ చేయండి' : 'Confirm Block'}
               </button>
             </div>
           </div>

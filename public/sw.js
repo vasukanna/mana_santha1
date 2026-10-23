@@ -1,4 +1,5 @@
-const CACHE_NAME = 'santhalo-cache-v1';
+// Change CACHE_VERSION and APP_VERSION on every release.
+const CACHE_VERSION = 'santhalo-v2';
 const OFFLINE_URL = '/offline.html';
 
 const APP_SHELL = [
@@ -11,22 +12,23 @@ const APP_SHELL = [
   '/logo.png'
 ];
 
-// 1. Install: Precache App Shell
+// 1. Install: Precache App Shell (Do NOT call skipWaiting automatically)
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(CACHE_VERSION).then((cache) => {
       return cache.addAll(APP_SHELL);
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
-// 2. Activate: Clean up old caches
+// 2. Activate: Clean up all caches that do not match CACHE_VERSION, then claim clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_VERSION) {
+            console.log('Purging old service worker cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -35,16 +37,35 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Fetch: Network-first for API/Firebase, Cache-first for static assets
+// 3. Listen for message { type: 'SKIP_WAITING' }
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// 4. Fetch Strategy
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') {
     return;
   }
 
   const url = new URL(event.request.url);
 
-  // Check if request is an API / Firebase / Google Auth request
+  // Bypass cache completely for Dev modules / Vite / HMR / Source files
+  const isDevOrSource =
+    url.pathname.startsWith('/src/') ||
+    url.pathname.includes('/@') ||
+    url.pathname.includes('node_modules') ||
+    url.pathname.endsWith('.ts') ||
+    url.pathname.endsWith('.tsx');
+
+  if (isDevOrSource) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Check if request is API / Firebase / Google Auth / backend
   const isApiOrFirebase =
     url.hostname.includes('googleapis.com') ||
     url.hostname.includes('firebaseio.com') ||
@@ -52,7 +73,7 @@ self.addEventListener('fetch', (event) => {
     url.hostname.includes('accounts.google.com') ||
     url.pathname.startsWith('/api/');
 
-  // For API / Firebase: Network-First (never stale auth/data)
+  // Network-First for API/Firebase calls
   if (isApiOrFirebase) {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -62,14 +83,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For Navigation (HTML page requests)
-  if (event.request.mode === 'navigate') {
+  // Network-First for HTML navigation / index.html
+  if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          if (response.status === 200) {
+          if (response && response.status === 200) {
             const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+            caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, copy));
           }
           return response;
         })
@@ -84,39 +105,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For Static Files (JS, CSS, Images, Fonts): Cache-First
+  // Cache-First for static assets (images, icons, fonts)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return cached and update cache in background (stale-while-revalidate)
-        fetch(event.request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse);
-              });
-            }
-          })
-          .catch(() => {});
         return cachedResponse;
       }
-
-      // If not in cache, fetch from network
       return fetch(event.request)
         .then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-            return networkResponse;
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_VERSION).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
           }
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
           return networkResponse;
         })
-        .catch(() => {
-          // If offline and requesting an image, we could fallback, or return nothing
-          return null;
-        });
+        .catch(() => null);
     })
   );
 });

@@ -1,25 +1,25 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { DEFAULT_CATEGORIES } from '../data/categories';
-import { AP_DISTRICTS } from '../data/apLocations';
+import { loadApLocations, getLoadedDistricts, DEFAULT_DISTRICT_NAME, getVillagesForMandal } from '../data/locationService';
 import { compressImage } from '../firebase';
+import { CategoryIcon } from '../components/CategoryIcon';
 import {
   Camera,
-  UploadCloud,
-  X,
-  CheckCircle,
+  Image as ImageIcon,
   Video,
-  Sparkles,
+  X,
+  CheckCircle2,
+  Phone,
   MapPin,
   Tag,
   AlertCircle,
-  Image as ImageIcon,
-  Play,
-  Film,
-  Phone,
-  SlidersHorizontal,
-  ChevronDown,
-  ChevronUp
+  Clock,
+  Check,
+  Sparkles,
+  Layers,
+  IndianRupee,
+  Navigation
 } from 'lucide-react';
 
 export const SellScreen: React.FC = () => {
@@ -31,791 +31,859 @@ export const SellScreen: React.FC = () => {
     loginWithGoogle,
     createListing,
     setActiveTab,
-    showToast,
-    appConfig,
-    setAuthModalOpen
+    showToast
   } = useApp();
 
-  // Form State
-  const [selectedCatId, setSelectedCatId] = useState<string>('livestock');
-  const [selectedSubcatId, setSelectedSubcatId] = useState<string>('sheep');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [negotiable, setNegotiable] = useState(true);
-  const [quantity, setQuantity] = useState('');
-  
-  // Media State: 3 to 4 Photos Max
+  // Step 1: Category & Title
+  const [categoryId, setCategoryId] = useState<string>('cereals_grains');
+  const [subcategoryId, setSubcategoryId] = useState<string>('paddy_rice');
+  const [title, setTitle] = useState<string>('');
+
+  // Step 2: Price, Quantity & Description
+  const [price, setPrice] = useState<string>('');
+  const [priceUnit, setPriceUnit] = useState<string>('per quintal');
+  const [negotiable, setNegotiable] = useState<boolean>(true);
+  const [quantity, setQuantity] = useState<string>('');
+  const [quantityUnit, setQuantityUnit] = useState<string>('quintals');
+  const [description, setDescription] = useState<string>('');
+
+  // Step 3: Location (Default SPSR Nellore)
+  const [district, setDistrict] = useState<string>(DEFAULT_DISTRICT_NAME);
+  const [mandal, setMandal] = useState<string>('Sangam');
+  const [village, setVillage] = useState<string>('Chennavarappadu');
+  const [otherVillageText, setOtherVillageText] = useState<string>('');
+  const [villageSearch, setVillageSearch] = useState<string>('');
+
+  // Step 4: Media & Phone
   const [images, setImages] = useState<string[]>([]);
-  const [videoUrl, setVideoUrl] = useState('');
-  const [videoPreview, setVideoPreview] = useState<string | null>(null);
-  const [isCompressing, setIsCompressing] = useState(false);
-  const [isVideoLoading, setIsVideoLoading] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string>('');
+  const [videoName, setVideoName] = useState<string>('');
+  const [sellerPhone, setSellerPhone] = useState<string>('');
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [compressing, setCompressing] = useState<boolean>(false);
 
-  // Hidden file input refs for Camera and Gallery
+  // Hidden file inputs
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
-  const videoCameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Custom Fields (Optional Accordion)
-  const [showAdvancedSpecs, setShowAdvancedSpecs] = useState(false);
-  const [customFields, setCustomFields] = useState<Record<string, any>>({});
+  // Pre-fill phone from user profile
+  useEffect(() => {
+    if (userProfile?.phone && !sellerPhone) {
+      setSellerPhone(userProfile.phone);
+    }
+  }, [userProfile, sellerPhone]);
 
-  // Location pre-filled from user profile or Nellore
-  const [district, setDistrict] = useState(userProfile?.district || 'Nellore (SPSR Nellore)');
-  const [mandal, setMandal] = useState(userProfile?.mandal || 'Kavali');
-  const [village, setVillage] = useState(userProfile?.village || '');
+  // Load AP locations lazily
+  useEffect(() => {
+    loadApLocations().then(() => {
+      const districts = getLoadedDistricts();
+      const currentD = districts.find(d => d.name === district) || districts[0];
+      if (currentD && currentD.mandals.length > 0) {
+        if (!currentD.mandals.some(m => m.name === mandal)) {
+          setMandal(currentD.mandals[0].name);
+        }
+      }
+    });
+  }, [district]);
 
-  // Contact
-  const [sellerName, setSellerName] = useState(userProfile?.name || currentUser?.displayName || '');
-  const [sellerPhone, setSellerPhone] = useState(userProfile?.phone || '');
+  // Current category object
+  const currentCategory = useMemo(() => {
+    return DEFAULT_CATEGORIES.find(c => c.id === categoryId) || DEFAULT_CATEGORIES[0];
+  }, [categoryId]);
 
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  // When category changes, set first subcategory
+  const handleCategorySelect = (id: string) => {
+    setCategoryId(id);
+    const cat = DEFAULT_CATEGORIES.find(c => c.id === id);
+    if (cat && cat.subcategories.length > 0) {
+      setSubcategoryId(cat.subcategories[0].id);
+    }
+  };
 
-  // Selected Category Object
-  const currentCategoryObj = DEFAULT_CATEGORIES.find(c => c.id === selectedCatId) || DEFAULT_CATEGORIES[0];
-  const currentDistrictObj = AP_DISTRICTS.find(d => d.name === district) || AP_DISTRICTS[0];
-  const currentMandalObj = currentDistrictObj.mandals.find(m => m.name === mandal) || currentDistrictObj.mandals[0];
+  // Districts & Mandals from service
+  const allDistricts = getLoadedDistricts();
+  const currentDistrictObj = allDistricts.find(d => d.name === district) || allDistricts[0];
+  const mandalsList = currentDistrictObj ? currentDistrictObj.mandals : [];
+  const villagesList = useMemo(() => {
+    return getVillagesForMandal(district, mandal);
+  }, [district, mandal]);
 
-  // Handle Photo Upload (from Camera or Gallery) — Max 4 photos
-  const processPhotoFiles = async (files: FileList | null) => {
+  // Filtered villages
+  const filteredVillages = useMemo(() => {
+    if (!villageSearch.trim()) return villagesList;
+    const q = villageSearch.toLowerCase().trim();
+    return villagesList.filter(v => v.name.toLowerCase().includes(q) || v.te.includes(q));
+  }, [villagesList, villageSearch]);
+
+  // Image upload & compress handler (~1000px width, max 3 photos)
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    if (images.length >= 4) {
-      showToast(lang === 'te' ? 'గరిష్టంగా 4 ఫోటోలు మాత్రమే జోడించగలరు' : 'Maximum 4 photos allowed');
+    if (images.length >= 3) {
+      showToast(lang === 'te' ? 'గరిష్టంగా 3 ఫోటోలు మాత్రమే అనుమతించబడతాయి.' : 'Maximum 3 photos allowed.');
       return;
     }
 
-    const availableSlots = 4 - images.length;
-    const filesToProcess = Array.from(files).slice(0, availableSlots);
+    setCompressing(true);
+    const remainingSlots = 3 - images.length;
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
 
-    setIsCompressing(true);
     try {
-      const newCompressedImages: string[] = [];
+      const compressedList: string[] = [];
       for (const file of filesToProcess) {
-        const compressedBase64 = await compressImage(file, 0.85);
-        newCompressedImages.push(compressedBase64);
+        if (file.type.startsWith('image/')) {
+          const compressed = await compressImage(file, 0.85); // compresses to ~1000px width
+          compressedList.push(compressed);
+        }
       }
-      setImages(prev => [...prev, ...newCompressedImages]);
-      showToast(
-        lang === 'te'
-          ? `✅ ${newCompressedImages.length} ఫోటో(లు) విజయవంతంగా జోడించబడ్డాయి!`
-          : `✅ Added ${newCompressedImages.length} photo(s)!`
-      );
+      setImages(prev => [...prev, ...compressedList]);
+      showToast(lang === 'te' ? 'ఫోటో జోడించబడింది!' : 'Photo added!');
     } catch (err) {
-      console.error('Error compressing photos:', err);
-      showToast(lang === 'te' ? 'ఫోటో లోడ్ చేయడంలో సమస్య వచ్చింది.' : 'Failed to compress photo.');
+      console.error('Compression error:', err);
+      showToast(lang === 'te' ? 'ఫోటో అప్‌లోడ్ విఫలమైంది.' : 'Photo upload failed.');
     } finally {
-      setIsCompressing(false);
+      setCompressing(false);
+      if (e.target) e.target.value = '';
     }
   };
 
-  const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
-    processPhotoFiles(e.target.files);
-    e.target.value = '';
-  };
-
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    processPhotoFiles(e.target.files);
-    e.target.value = '';
-  };
-
-  const removePhoto = (index: number) => {
+  const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Handle Video file (Camera recording or video clip upload)
-  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Video upload (max 30s and 20MB)
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size (max 25MB)
-    if (file.size > 25 * 1024 * 1024) {
-      showToast(lang === 'te' ? 'వీడియో పరిమాణం 25MB కంటే తక్కువ ఉండాలి' : 'Video size must be under 25MB');
+    const maxSizeBytes = 20 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      showToast(lang === 'te' ? 'వీడియో పరిమాణం 20MB కంటే తక్కువగా ఉండాలి.' : 'Video size must be under 20MB.');
       return;
     }
 
-    setIsVideoLoading(true);
     const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      setVideoPreview(result);
-      setVideoUrl(result);
-      setIsVideoLoading(false);
-      showToast(lang === 'te' ? '✅ వీడియో విజయవంతంగా జోడించబడింది!' : '✅ Video attached successfully!');
-    };
-    reader.onerror = () => {
-      setIsVideoLoading(false);
-      showToast(lang === 'te' ? 'వీడియో లోడ్ చేయడంలో విఫలమైంది' : 'Failed to load video');
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setVideoUrl(dataUrl);
+      setVideoName(file.name);
+      showToast(lang === 'te' ? 'వీడియో విజయవంతంగా జోడించబడింది!' : 'Video attached successfully!');
     };
     reader.readAsDataURL(file);
-    e.target.value = '';
+    if (e.target) e.target.value = '';
   };
 
   const removeVideo = () => {
-    setVideoPreview(null);
     setVideoUrl('');
+    setVideoName('');
   };
 
-  const handleCustomFieldChange = (fieldId: string, value: any) => {
-    setCustomFields(prev => ({
-      ...prev,
-      [fieldId]: value
-    }));
-  };
+  // Step 1 status check
+  const isStep1Complete = title.trim().length > 0 && title.length <= 60;
+  // Step 2 status check
+  const isStep2Complete = Boolean(price && Number(price) > 0);
+  // Step 3 status check
+  const isStep3Complete = Boolean(district && mandal && (village !== 'Other village' || otherVillageText.trim()));
+  // Step 4 status check
+  const isStep4Complete = Boolean(sellerPhone.trim() || userProfile?.phone);
 
-  // Submit Listing
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
+  // Submit Listing with safe defaults and undefined protection
+  const handleFinalSubmit = async () => {
+    if (!title.trim()) {
+      showToast(lang === 'te' ? 'దయచేసి దశ 1లో ప్రకటన శీర్షిక రాయండి.' : 'Please enter an ad title in Step 1.');
+      document.getElementById('step-1')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (title.length > 60) {
+      showToast(lang === 'te' ? 'శీర్షిక 60 అక్షరాల కంటే తక్కువగా ఉండాలి.' : 'Title must be 60 characters or less.');
+      return;
+    }
+    if (!price || Number(price) <= 0) {
+      showToast(lang === 'te' ? 'దయచేసి దశ 2లో సరైన ధర రాయండి.' : 'Please enter a valid price in Step 2.');
+      document.getElementById('step-2')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (!district || !mandal) {
+      showToast(lang === 'te' ? 'దయచేసి దశ 3లో జిల్లా మరియు మండలం ఎంచుకోండి.' : 'Please select District and Mandal in Step 3.');
+      document.getElementById('step-3')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    const finalVillage = village === 'Other village' ? otherVillageText.trim() : village;
+    if (!finalVillage) {
+      showToast(lang === 'te' ? 'దయచేసి దశ 3లో మీ గ్రామం పేరు రాయండి.' : 'Please enter village name in Step 3.');
+      document.getElementById('step-3')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (!sellerPhone.trim() && !userProfile?.phone) {
+      showToast(lang === 'te' ? 'దయచేసి దశ 4లో మీ ఫోన్ నంబర్ నమోదు చేయండి.' : 'Please provide contact phone in Step 4.');
+      document.getElementById('step-4')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
 
     if (!currentUser) {
-      showToast(lang === 'te' ? 'ప్రకటన పోస్ట్ చేయడానికి దయచేసి లాగిన్ అవ్వండి.' : 'Please sign in to publish an ad.');
+      setSubmitting(true);
       await loginWithGoogle();
+      setSubmitting(false);
       return;
     }
-
-    if (!title.trim()) {
-      setErrorMsg(lang === 'te' ? 'దయచేసి ప్రకటన శీర్షిక రాయండి' : 'Please enter listing title');
-      return;
-    }
-
-    if (!price || isNaN(Number(price))) {
-      setErrorMsg(lang === 'te' ? 'సరైన ధరను నమోదు చేయండి' : 'Please enter valid price');
-      return;
-    }
-
-    if (!sellerPhone.trim() || sellerPhone.length < 10) {
-      setErrorMsg(lang === 'te' ? 'కొనుగోలుదారులు సంప్రదించడానికి 10 అంకెల మొబైల్ నంబర్ అవసరం' : 'Please enter valid 10-digit mobile number');
-      return;
-    }
-
-    if (!village.trim()) {
-      setErrorMsg(lang === 'te' ? 'మీ గ్రామం లేదా ప్రాంతం పేరు రాయండి' : 'Please enter village or locality name');
-      return;
-    }
-
-    // Default sample image if none provided
-    const finalImages = images.length > 0
-      ? images
-      : ['https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'];
 
     setSubmitting(true);
     try {
-      const listingData = {
-        sellerId: currentUser.uid,
-        sellerName: sellerName || currentUser.displayName || 'రైతు మిత్రుడు',
-        sellerPhone: sellerPhone.trim(),
-        category: selectedCatId,
-        subcategory: selectedSubcatId,
+      const listingPayload = {
         title: title.trim(),
-        description: description.trim(),
-        price: Number(price),
-        negotiable,
-        quantity: quantity.trim(),
-        images: finalImages,
-        video: videoUrl.trim() || undefined,
-        district,
-        mandal,
-        village: village.trim(),
+        category: categoryId,
+        subcategory: subcategoryId,
+        price: Number(price) || 0,
+        priceUnit: priceUnit || 'per quintal',
+        negotiable: Boolean(negotiable),
+        quantity: quantity.trim() ? `${quantity.trim()} ${quantityUnit}` : '',
+        quantityUnit: quantityUnit || '',
+        description: description.trim() || '',
+        district: district || DEFAULT_DISTRICT_NAME,
+        mandal: mandal || '',
+        village: finalVillage || '',
+        images: images.length > 0 ? images : ['/assets/nellore_jodipi_1.jpg'],
+        video: videoUrl || '',
+        sellerPhone: sellerPhone.trim() || userProfile?.phone || '',
+        sellerName: currentUser.displayName || userProfile?.name || 'రైతు మిత్రుడు',
+        sellerId: currentUser.uid,
         status: 'active' as const,
         featured: false,
-        customFields
+        customFields: {}
       };
 
-      await createListing(listingData);
-      showToast(lang === 'te' ? '🎉 మీ ప్రకటన సంతలో ప్రచురించబడింది!' : '🎉 Listing published to Santha!');
-      setActiveTab('my_ads');
-    } catch (err: any) {
-      console.error('Submit error:', err);
-      setErrorMsg(err.message || 'Error publishing listing');
+      await createListing(listingPayload);
+      setActiveTab('home');
+    } catch (err) {
+      console.error('Error creating listing:', err);
+      showToast(lang === 'te' ? 'ప్రకటన పోస్టింగ్ విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.' : 'Failed to post ad. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="pb-28 pt-2">
-      <div className="max-w-2xl mx-auto px-3 sm:px-4 space-y-4">
-        
-        {/* Header Banner */}
-        <div className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 rounded-3xl p-5 text-white shadow-md">
-          <div className="flex items-center justify-between mb-1">
-            <span className="bg-white/20 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
-              100% {t.freeBadge}
-            </span>
-            <span className="text-[11px] font-bold text-orange-100 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-              <span>{lang === 'te' ? 'సులభమైన 4 దశల ప్రకటన' : 'Simple 4-Step Ad'}</span>
+    <div className="pb-36 pt-2 px-3 sm:px-4 max-w-2xl mx-auto space-y-4">
+      {/* 
+        HEADER CARD:
+        Logo + "One Santha. Endless Connections" sentence 
+      */}
+      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-950 rounded-3xl p-5 text-white shadow-xl border border-blue-700/50 relative overflow-hidden">
+        <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-orange-500/20 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -left-8 -top-8 w-32 h-32 bg-blue-400/20 rounded-full blur-xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left justify-between">
+          {/* Logo with White Badge */}
+          <div className="flex items-center gap-3">
+            <div className="w-16 h-16 rounded-2xl bg-white p-1.5 shadow-lg border border-white/60 flex items-center justify-center shrink-0">
+              <img
+                src="/logo.png"
+                alt="Santhalo Logo"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/icon-192.png';
+                }}
+              />
+            </div>
+            <div>
+              <div className="inline-block bg-orange-500/90 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-1">
+                {lang === 'te' ? 'ఒకే పేజీలో 4 దశలు' : 'All 4 Steps on Single Page'}
+              </div>
+              <h1 className="text-lg sm:text-xl font-black text-white tracking-tight leading-snug">
+                One Santha. Endless Connections
+              </h1>
+              <p className="text-xs text-blue-200 font-medium">
+                {lang === 'te'
+                  ? 'ఒకే సంత. అనంత అనుసంధానాలు • మీ ప్రకటనను సులభంగా పోస్ట్ చేయండి'
+                  : 'Direct rural & agri marketplace for Andhra Pradesh'}
+              </p>
+            </div>
+          </div>
+
+          <div className="hidden sm:flex flex-col items-end shrink-0">
+            <span className="text-xs font-black px-3 py-1 bg-orange-500 text-white rounded-full shadow-sm">
+              4 Steps Form
             </span>
           </div>
-          <h1 className="text-xl font-extrabold tracking-tight">
-            {t.postAdTitle}
-          </h1>
-          <p className="text-xs text-orange-100 mt-1">
-            {lang === 'te'
-              ? 'ఫోటోలు & వీడియోలతో మీ సరుకును క్షణాల్లో వేలాది మంది రైతులకు చూపించండి.'
-              : 'Showcase your crops, cattle, or rentals with quick photos & video.'}
-          </p>
         </div>
 
-        {/* Not Logged In Warning */}
-        {!currentUser && (
-          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <AlertCircle className="w-5 h-5 text-amber-700 shrink-0" />
-              <div className="text-xs text-amber-950 font-medium">
-                {lang === 'te'
-                  ? 'ప్రకటన నమోదు చేయడానికి సైన్-ఇన్ అవ్వండి.'
-                  : 'Sign in to post and manage your listings.'}
+        {/* 4-Step Visual Progress Bar */}
+        <div className="grid grid-cols-4 gap-2 pt-4 mt-3 border-t border-blue-700/60">
+          {[
+            { num: 1, titleEn: 'Category', titleTe: 'కేటగిరీ', done: isStep1Complete },
+            { num: 2, titleEn: 'Price', titleTe: 'ధర', done: isStep2Complete },
+            { num: 3, titleEn: 'Location', titleTe: 'ప్రాంతం', done: isStep3Complete },
+            { num: 4, titleEn: 'Media', titleTe: 'మీడియా', done: isStep4Complete },
+          ].map((s) => (
+            <div key={s.num} className="space-y-1">
+              <div className="flex items-center gap-1.5 justify-center">
+                <span className={`w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center transition-colors ${
+                  s.done ? 'bg-orange-500 text-white shadow-xs' : 'bg-blue-800 text-blue-200 border border-blue-600'
+                }`}>
+                  {s.done ? '✓' : s.num}
+                </span>
+                <span className="text-[11px] font-bold text-white hidden sm:inline">
+                  {lang === 'te' ? s.titleTe : s.titleEn}
+                </span>
               </div>
+              <div className={`h-1.5 rounded-full transition-all ${
+                s.done ? 'bg-orange-500' : 'bg-blue-800'
+              }`} />
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={loginWithGoogle}
-                className="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl shrink-0 cursor-pointer shadow-xs"
-              >
-                {t.googleSignIn}
-              </button>
-              <button
-                onClick={() => setAuthModalOpen(true)}
-                className="bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs px-2.5 py-1.5 rounded-xl shrink-0 cursor-pointer shadow-xs"
-              >
-                {lang === 'te' ? 'తక్షణ లాగిన్' : 'Quick Login'}
-              </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ALL 4 STEPS DISPLAYED ON A SINGLE PAGE */}
+
+      {/* STEP 1: CATEGORY, SUB-CATEGORY & AD TITLE */}
+      <section id="step-1" className="bg-white rounded-3xl p-5 border border-stone-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+          <div className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-xl bg-blue-100 text-blue-900 font-black text-sm flex items-center justify-center">
+              1
+            </span>
+            <div>
+              <h2 className="text-sm font-black text-stone-900 uppercase tracking-tight">
+                {lang === 'te' ? 'దశ 1: కేటగిరీ & శీర్షిక' : 'Step 1: Category & Title'}
+              </h2>
+              <p className="text-[11px] text-stone-500">
+                {lang === 'te' ? 'మీరు విక్రయించాలనుకుంటున్న వర్గం ఎంచుకోండి' : 'Choose fixed category and name your product'}
+              </p>
             </div>
           </div>
-        )}
+          {isStep1Complete && (
+            <span className="flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+              <Check className="w-3.5 h-3.5" />
+              <span>{lang === 'te' ? 'పూర్తయింది' : 'Ready'}</span>
+            </span>
+          )}
+        </div>
 
-        {/* Error Alert */}
-        {errorMsg && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3.5 rounded-2xl flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
-            <span>{errorMsg}</span>
+        {/* Categories Grid */}
+        <div>
+          <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-2">
+            {lang === 'te' ? 'ప్రధాన కేటగిరీని ఎంచుకోండి' : 'Select Category'} *
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1">
+            {DEFAULT_CATEGORIES.map((cat) => {
+              const isSelected = categoryId === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleCategorySelect(cat.id)}
+                  className={`p-3 rounded-2xl border text-left flex items-center gap-2.5 transition-all cursor-pointer min-h-[50px] ${
+                    isSelected
+                      ? 'border-blue-600 bg-blue-50 text-blue-950 ring-2 ring-blue-500/20 shadow-xs'
+                      : 'border-stone-200 hover:border-blue-300 hover:bg-stone-50 text-stone-700'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                    isSelected ? 'bg-white text-emerald-800' : 'bg-stone-100 text-stone-600'
+                  }`}>
+                    <CategoryIcon name={cat.id} className="w-6 h-6 object-contain" />
+                  </div>
+                  <span className="text-xs font-bold leading-tight">
+                    {lang === 'te' ? cat.nameTe : cat.nameEn}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* STEP 1: CATEGORY & TITLE */}
-          <div className="bg-white rounded-3xl p-4 sm:p-5 border border-stone-200 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-black text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-5 h-5 rounded-full bg-orange-600 text-white inline-flex items-center justify-center text-[11px] font-black">1</span>
-                <span>{lang === 'te' ? 'విభాగం & ప్రకటన పేరు' : 'Category & Title'}</span>
-              </label>
-              <span className="text-[11px] text-orange-600 font-bold">
-                {lang === 'te' ? currentCategoryObj.nameTe : currentCategoryObj.nameEn}
+        {/* Sub-category selector */}
+        <div className="pt-2 border-t border-stone-100">
+          <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-2">
+            {lang === 'te' ? 'ఉప-కేటగిరీ (రకం)' : 'Sub-Category'} *
+          </label>
+          <div className="flex flex-wrap gap-1.5">
+            {currentCategory.subcategories.map((sub) => {
+              const isSubSelected = subcategoryId === sub.id;
+              return (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setSubcategoryId(sub.id)}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer min-h-[44px] ${
+                    isSubSelected
+                      ? 'bg-blue-900 text-white border-blue-900 shadow-xs'
+                      : 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100'
+                  }`}
+                >
+                  {lang === 'te' ? sub.nameTe : sub.nameEn}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Ad Title */}
+        <div className="pt-2 border-t border-stone-100">
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-black text-stone-800 uppercase tracking-wider">
+              {lang === 'te' ? 'ప్రకటన శీర్షిక (టైటిల్ - గరిష్టంగా 60 అక్షరాలు)' : 'Ad Title (Max 60 chars)'} *
+            </label>
+            <span className={`text-[11px] font-bold ${title.length > 55 ? 'text-orange-600' : 'text-stone-400'}`}>
+              {title.length}/60
+            </span>
+          </div>
+          <input
+            type="text"
+            value={title}
+            maxLength={60}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={lang === 'te' ? 'ఉదా: షుగర్‌లెస్ వరి ధాన్యం లేదా కొబ్బరికాయలు' : 'e.g. Sugarless paddy or Nellore Jodipi rams'}
+            className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-3 text-sm font-semibold text-stone-900 placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 min-h-[46px]"
+          />
+          <p className="text-[11px] text-stone-500 mt-1">
+            {lang === 'te'
+              ? 'కేటగిరీ ముందుగానే నిర్ణయించబడింది. మీరు కేవలం మీ పంట లేదా వస్తువు పేరు రాయండి.'
+              : 'Category is pre-selected. You only need to type the specific item name.'}
+          </p>
+        </div>
+      </section>
+
+      {/* STEP 2: PRICE, QUANTITY & DESCRIPTION */}
+      <section id="step-2" className="bg-white rounded-3xl p-5 border border-stone-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+          <div className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-xl bg-orange-100 text-orange-900 font-black text-sm flex items-center justify-center">
+              2
+            </span>
+            <div>
+              <h2 className="text-sm font-black text-stone-900 uppercase tracking-tight">
+                {lang === 'te' ? 'దశ 2: ధర & పరిమాణం' : 'Step 2: Price & Quantity'}
+              </h2>
+              <p className="text-[11px] text-stone-500">
+                {lang === 'te' ? 'అంచనా ధర మరియు అందుబాటులో ఉన్న వివరాలు' : 'Enter unit price, available quantity and details'}
+              </p>
+            </div>
+          </div>
+          {isStep2Complete && (
+            <span className="flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+              <Check className="w-3.5 h-3.5" />
+              <span>{lang === 'te' ? 'పూర్తయింది' : 'Ready'}</span>
+            </span>
+          )}
+        </div>
+
+        {/* Price & Unit */}
+        <div>
+          <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-1.5">
+            {lang === 'te' ? 'అంచనా ధర (రూపాయల్లో)' : 'Approx Price (₹)'} *
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-stone-500 text-sm">
+                ₹
               </span>
+              <input
+                type="number"
+                min="0"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder={lang === 'te' ? 'ఉదా: 2500' : 'e.g. 2500'}
+                className="w-full bg-stone-50 border border-stone-300 rounded-xl pl-8 pr-3 py-3 text-sm font-bold text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600 min-h-[46px]"
+              />
             </div>
 
-            {/* Category Select Pills */}
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-              {DEFAULT_CATEGORIES.map((cat) => {
-                const isSelected = selectedCatId === cat.id;
-                return (
-                  <button
-                    type="button"
-                    key={cat.id}
-                    onClick={() => {
-                      setSelectedCatId(cat.id);
-                      setSelectedSubcatId(cat.subcategories[0]?.id || '');
-                      setCustomFields({});
-                    }}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold shrink-0 border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-orange-600 bg-orange-50 text-orange-950 shadow-xs ring-1 ring-orange-500/20'
-                        : 'border-stone-200 text-stone-700 hover:bg-stone-50 bg-stone-50/50'
-                    }`}
-                  >
-                    <span>{lang === 'te' ? cat.nameTe : cat.nameEn}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {/* Price Unit Selector */}
+            <select
+              value={priceUnit}
+              onChange={(e) => setPriceUnit(e.target.value)}
+              className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-3 text-xs font-bold text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600 min-h-[46px]"
+            >
+              <option value="per kg">{lang === 'te' ? 'కేజీకి (Per kg)' : 'Per kg'}</option>
+              <option value="per quintal">{lang === 'te' ? 'క్వింటాకి (Per quintal)' : 'Per quintal'}</option>
+              <option value="per ton">{lang === 'te' ? 'టన్నుకి (Per ton)' : 'Per ton'}</option>
+              <option value="per piece">{lang === 'te' ? 'ఒక్కంటికి / నంబరుకి (Per piece)' : 'Per piece'}</option>
+              <option value="per acre">{lang === 'te' ? 'ఎకరానికి (Per acre)' : 'Per acre'}</option>
+              <option value="total">{lang === 'te' ? 'మొత్తం వెల (Total Price)' : 'Total'}</option>
+            </select>
+          </div>
 
-            {/* Subcategory Pills */}
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {currentCategoryObj.subcategories.map((sub) => {
-                const isSubSelected = selectedSubcatId === sub.id;
-                return (
-                  <button
-                    type="button"
-                    key={sub.id}
-                    onClick={() => setSelectedSubcatId(sub.id)}
-                    className={`px-3 py-1 rounded-full text-xs transition-all font-semibold cursor-pointer ${
-                      isSubSelected
-                        ? 'bg-stone-900 text-white shadow-xs'
-                        : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
-                    }`}
-                  >
-                    {lang === 'te' ? sub.nameTe : sub.nameEn}
-                  </button>
-                );
-              })}
-            </div>
+          <label className="mt-2.5 flex items-center gap-2 cursor-pointer text-xs font-semibold text-stone-700">
+            <input
+              type="checkbox"
+              checked={negotiable}
+              onChange={(e) => setNegotiable(e.target.checked)}
+              className="w-4 h-4 accent-orange-600 rounded-xs"
+            />
+            <span>{lang === 'te' ? 'ధర చర్చించదగినది (బేరం / Negotiable)' : 'Price is negotiable'}</span>
+          </label>
+        </div>
 
-            {/* Title */}
-            <div className="pt-1">
-              <label className="text-xs font-bold text-stone-700 block mb-1">
-                {t.adTitle} *
+        {/* Quantity Available */}
+        <div className="pt-2 border-t border-stone-100">
+          <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-1.5">
+            {lang === 'te' ? 'అందుబాటులో ఉన్న పరిమాణం' : 'Quantity Available'}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="text"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder={lang === 'te' ? 'ఉదా: 50' : 'e.g. 50'}
+              className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-3 text-sm font-semibold text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600 min-h-[46px]"
+            />
+            <select
+              value={quantityUnit}
+              onChange={(e) => setQuantityUnit(e.target.value)}
+              className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-3 text-xs font-bold text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600 min-h-[46px]"
+            >
+              <option value="quintals">{lang === 'te' ? 'క్వింటాళ్ళు (Quintals)' : 'Quintals'}</option>
+              <option value="bags">{lang === 'te' ? 'బస్తాలు (Bags)' : 'Bags'}</option>
+              <option value="tons">{lang === 'te' ? 'టన్నులు (Tons)' : 'Tons'}</option>
+              <option value="kg">{lang === 'te' ? 'కేజీలు (Kg)' : 'Kg'}</option>
+              <option value="acres">{lang === 'te' ? 'ఎకరాలు (Acres)' : 'Acres'}</option>
+              <option value="pieces">{lang === 'te' ? 'సంఖ్య / జతలు (Count)' : 'Pieces'}</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Short Description */}
+        <div className="pt-2 border-t border-stone-100">
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-black text-stone-800 uppercase tracking-wider">
+              {lang === 'te' ? 'సంక్షిప్త వివరాలు (ఐచ్ఛికం - గరిష్టంగా 300 అక్షరాలు)' : 'Short Description (Optional, max 300)'}
+            </label>
+            <span className={`text-[11px] font-bold ${description.length > 280 ? 'text-orange-600' : 'text-stone-400'}`}>
+              {description.length}/300
+            </span>
+          </div>
+          <textarea
+            value={description}
+            maxLength={300}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            placeholder={lang === 'te' ? 'నాణ్యత, వయస్సు లేదా ఇతర ముఖ్యమైన వివరాలు రాయండి...' : 'Mention quality, age, condition, or harvest date...'}
+            className="w-full bg-stone-50 border border-stone-300 rounded-xl p-3 text-xs font-medium text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600"
+          />
+        </div>
+      </section>
+
+      {/* STEP 3: LOCATION (DISTRICT, MANDAL, VILLAGE) */}
+      <section id="step-3" className="bg-white rounded-3xl p-5 border border-stone-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+          <div className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-xl bg-blue-100 text-blue-900 font-black text-sm flex items-center justify-center">
+              3
+            </span>
+            <div>
+              <h2 className="text-sm font-black text-stone-900 uppercase tracking-tight">
+                {lang === 'te' ? 'దశ 3: మీ ప్రాంతం' : 'Step 3: Location'}
+              </h2>
+              <p className="text-[11px] text-stone-500">
+                {lang === 'te' ? 'జిల్లా, మండలం మరియు మీ ఊరు ఎంచుకోండి' : 'District, Mandal & Village dependent dropdowns'}
+              </p>
+            </div>
+          </div>
+          {isStep3Complete && (
+            <span className="flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+              <Check className="w-3.5 h-3.5" />
+              <span>{lang === 'te' ? 'పూర్తయింది' : 'Ready'}</span>
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 p-2.5 bg-blue-50 border border-blue-200 rounded-2xl text-blue-950 text-xs font-bold">
+          <MapPin className="w-4 h-4 text-blue-700 shrink-0" />
+          <span>
+            {lang === 'te' 
+              ? 'డిఫాల్ట్‌గా నెల్లూరు జిల్లా ఎంపిక చేయబడింది. అవసరమైతే ఇతర ఆంధ్రప్రదేశ్ జిల్లా ఎంచుకోండి.' 
+              : 'SPSR Nellore is selected by default. Change to any AP district.'}
+          </span>
+        </div>
+
+        {/* District Dropdown */}
+        <div>
+          <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-1.5">
+            {lang === 'te' ? 'జిల్లా (District)' : 'District'} *
+          </label>
+          <select
+            value={district}
+            onChange={(e) => {
+              const newD = e.target.value;
+              setDistrict(newD);
+              const found = allDistricts.find(d => d.name === newD);
+              if (found && found.mandals.length > 0) {
+                setMandal(found.mandals[0].name);
+              }
+            }}
+            className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-3 text-xs font-bold text-stone-900 notranslate min-h-[46px]"
+            translate="no"
+          >
+            {allDistricts.map((d) => (
+              <option key={d.code} value={d.name} translate="no" className="notranslate">
+                {lang === 'te' ? `${d.name} (${d.te})` : d.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Mandal Dropdown */}
+        <div>
+          <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-1.5">
+            {lang === 'te' ? 'మండలం (Mandal)' : 'Mandal'} *
+          </label>
+          <select
+            value={mandal}
+            onChange={(e) => {
+              setMandal(e.target.value);
+              setVillageSearch('');
+            }}
+            className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-3 text-xs font-bold text-stone-900 notranslate min-h-[46px]"
+            translate="no"
+          >
+            {mandalsList.map((m) => (
+              <option key={m.name} value={m.name} translate="no" className="notranslate">
+                {lang === 'te' ? `${m.name} (${m.te})` : m.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Village Selector & Search */}
+        <div>
+          <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-1.5">
+            {lang === 'te' ? 'గ్రామం / ఊరు (Village)' : 'Village'} *
+          </label>
+          <select
+            value={village}
+            onChange={(e) => setVillage(e.target.value)}
+            className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-3 text-xs font-bold text-stone-900 notranslate min-h-[46px]"
+            translate="no"
+          >
+            {filteredVillages.map((v) => (
+              <option key={v.name} value={v.name} translate="no" className="notranslate">
+                {lang === 'te' ? `${v.name} (${v.te})` : v.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Other village text input if selected */}
+          {village === 'Other village' && (
+            <div className="mt-2.5">
+              <label className="block text-[11px] font-bold text-blue-900 mb-1">
+                {lang === 'te' ? 'మీ ఊరు / గ్రామం పేరు ఇక్కడ రాయండి:' : 'Type your village name here:'}
               </label>
               <input
                 type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={
-                  selectedCatId === 'livestock'
-                    ? (lang === 'te' ? 'ఉదా: నెల్లూరు జోడిపి పొట్టేళ్లు 12 సంఖ్య' : 'e.g. Nellore Jodipi Sheep 12 nos')
-                    : selectedCatId === 'cereals'
-                    ? (lang === 'te' ? 'ఉదా: BPT 5204 సోనా మసూరి వరి ధాన్యం 100 బస్తాలు' : 'e.g. Sona Masoori Paddy 100 bags')
-                    : t.adTitlePlaceholder
-                }
-                className="w-full bg-stone-50 border border-stone-200 rounded-2xl p-3 text-sm text-stone-900 font-semibold focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                required
+                value={otherVillageText}
+                onChange={(e) => setOtherVillageText(e.target.value)}
+                placeholder={lang === 'te' ? 'ఉదా: కొత్తూరు పల్లె' : 'e.g. Kothuru Palle'}
+                className="w-full bg-white border-2 border-orange-500 rounded-xl px-3.5 py-2.5 text-xs font-bold text-stone-900 focus:outline-hidden min-h-[44px]"
               />
             </div>
-          </div>
+          )}
+        </div>
+      </section>
 
-          {/* STEP 2: PRICE & QUANTITY */}
-          <div className="bg-white rounded-3xl p-4 sm:p-5 border border-stone-200 shadow-xs space-y-3">
-            <label className="text-xs font-black text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded-full bg-orange-600 text-white inline-flex items-center justify-center text-[11px] font-black">2</span>
-              <span>{lang === 'te' ? 'ధర & పరిమాణం' : 'Price & Quantity'}</span>
-            </label>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-              <div>
-                <label className="text-xs font-bold text-stone-700 block mb-1">
-                  {t.priceLabel} *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-black text-stone-600 text-sm">
-                    ₹
-                  </span>
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder={t.pricePlaceholder}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-2xl pl-8 pr-3 py-3 text-sm font-black text-stone-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-stone-700 block mb-1">
-                  {lang === 'te' ? 'పరిమాణం / యూనిట్' : 'Quantity / Unit'}
-                </label>
-                <input
-                  type="text"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  placeholder={lang === 'te' ? 'ఉదా: 10 బస్తాలు / 12 పొట్టేళ్లు / 1 ఎకరం' : 'e.g. 50 Bags / 1 Pair / 1 Acre'}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-2xl p-3 text-xs text-stone-800 font-medium focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                />
-              </div>
-            </div>
-
-            {/* Negotiable Toggle */}
-            <div className="flex items-center justify-between p-3 rounded-2xl border border-stone-200 bg-stone-50/70 hover:bg-stone-50 cursor-pointer" onClick={() => setNegotiable(!negotiable)}>
-              <span className="text-xs font-bold text-stone-800">
-                {t.isNegotiableLabel}
-              </span>
-              <input
-                type="checkbox"
-                checked={negotiable}
-                onChange={() => {}}
-                className="w-4 h-4 accent-orange-600 cursor-pointer"
-              />
-            </div>
-
-            {/* Description */}
+      {/* STEP 4: MEDIA (3 PHOTOS + 1 VIDEO), PHONE & REVIEW */}
+      <section id="step-4" className="bg-white rounded-3xl p-5 border border-stone-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+          <div className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-xl bg-orange-100 text-orange-900 font-black text-sm flex items-center justify-center">
+              4
+            </span>
             <div>
-              <label className="text-xs font-bold text-stone-700 block mb-1">
-                {t.adDescription}
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
-                placeholder={t.adDescriptionPlaceholder}
-                className="w-full bg-stone-50 border border-stone-200 rounded-2xl p-3 text-xs text-stone-900 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-              />
+              <h2 className="text-sm font-black text-stone-900 uppercase tracking-tight">
+                {lang === 'te' ? 'దశ 4: ఫోటోలు & ఫోన్ నంబర్' : 'Step 4: Media & Contact'}
+              </h2>
+              <p className="text-[11px] text-stone-500">
+                {lang === 'te' ? 'ఫోటోలు, చిన్న వీడియో మరియు సంప్రదింపు నంబర్' : 'Upload photos (max 3), video and verify phone'}
+              </p>
             </div>
           </div>
+          {isStep4Complete && (
+            <span className="flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+              <Check className="w-3.5 h-3.5" />
+              <span>{lang === 'te' ? 'పూర్తయింది' : 'Ready'}</span>
+            </span>
+          )}
+        </div>
 
-          {/* STEP 3: LOCATION & CONTACT */}
-          <div className="bg-white rounded-3xl p-4 sm:p-5 border border-stone-200 shadow-xs space-y-3">
-            <label className="text-xs font-black text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded-full bg-orange-600 text-white inline-flex items-center justify-center text-[11px] font-black">3</span>
-              <span>{lang === 'te' ? 'ప్రాంతం & మొబైల్ నంబర్' : 'Location & Contact'}</span>
+        {/* Photo Upload: Max 3 */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-black text-stone-800 uppercase tracking-wider">
+              {lang === 'te' ? 'ఫోటోలు (గరిష్టంగా 3)' : 'Photos (Maximum 3)'}
             </label>
-
-            {/* District & Mandal Dropdowns */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-bold text-stone-700 block mb-1">
-                  {t.filterDistrict} *
-                </label>
-                <select
-                  value={district}
-                  onChange={(e) => {
-                    setDistrict(e.target.value);
-                    const found = AP_DISTRICTS.find(d => d.name === e.target.value);
-                    if (found && found.mandals.length > 0) {
-                      setMandal(found.mandals[0].name);
-                    }
-                  }}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-bold text-stone-900"
-                >
-                  {AP_DISTRICTS.map((d) => (
-                    <option key={d.code} value={d.name}>
-                      {lang === 'te' ? d.te : d.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-stone-700 block mb-1">
-                  {t.filterMandal} *
-                </label>
-                <select
-                  value={mandal}
-                  onChange={(e) => setMandal(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-bold text-stone-900"
-                >
-                  {currentDistrictObj.mandals.map((m) => (
-                    <option key={m.name} value={m.name}>
-                      {lang === 'te' ? m.te : m.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Village Input with quick suggestion buttons */}
-            <div>
-              <label className="text-xs font-bold text-stone-700 block mb-1">
-                {t.filterVillage} *
-              </label>
-              <input
-                type="text"
-                value={village}
-                onChange={(e) => setVillage(e.target.value)}
-                placeholder={lang === 'te' ? 'మీ ఊరు / గ్రామం పేరు రాయండి' : 'Enter village name'}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-semibold text-stone-900"
-                required
-              />
-
-              {currentMandalObj?.villages && currentMandalObj.villages.length > 0 && (
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] text-stone-400 font-bold">
-                    {lang === 'te' ? 'త్వరిత ఎంపిక:' : 'Quick Select:'}
-                  </span>
-                  {currentMandalObj.villages.slice(0, 6).map((v) => (
-                    <button
-                      type="button"
-                      key={v.name}
-                      onClick={() => setVillage(lang === 'te' ? v.te : v.name)}
-                      className={`text-[11px] px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
-                        village === (lang === 'te' ? v.te : v.name) || village === v.name
-                          ? 'bg-orange-600 text-white border-orange-600 font-bold'
-                          : 'bg-stone-100 hover:bg-orange-50 text-stone-700 border-stone-200'
-                      }`}
-                    >
-                      {lang === 'te' ? v.te : v.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Mobile Phone (Required for buyer calls) */}
-            <div className="pt-1">
-              <label className="text-xs font-bold text-stone-700 block mb-1">
-                {t.phoneRequired} *
-              </label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="tel"
-                  value={sellerPhone}
-                  onChange={(e) => setSellerPhone(e.target.value)}
-                  placeholder="9848012345"
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-stone-900"
-                  required
-                />
-              </div>
-            </div>
+            <span className="text-[11px] font-bold text-stone-500">
+              {images.length}/3 {lang === 'te' ? 'ఫోటోలు' : 'photos'}
+            </span>
           </div>
 
-          {/* STEP 4: PHOTOS (3-4 OPTIONS) WITH DIRECT CAMERA & VIDEO CLIP */}
-          <div className="bg-white rounded-3xl p-4 sm:p-5 border border-stone-200 shadow-xs space-y-3.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-black text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-5 h-5 rounded-full bg-orange-600 text-white inline-flex items-center justify-center text-[11px] font-black">4</span>
-                <span>{lang === 'te' ? 'ఫోటోలు (3-4) & వీడియో' : 'Photos (3-4) & Video'}</span>
-              </label>
-              <span className="text-[11px] font-bold text-orange-600">
-                {images.length}/4 {lang === 'te' ? 'ఫోటోలు' : 'Photos'}
-              </span>
-            </div>
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
 
-            {/* Direct Action Buttons: Camera & Gallery */}
-            <div className="grid grid-cols-2 gap-2.5">
-              {/* Direct Camera Button (Opens device camera immediately) */}
+          {/* Upload Buttons */}
+          {images.length < 3 && (
+            <div className="grid grid-cols-2 gap-2 mb-3">
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                disabled={images.length >= 4}
-                className="py-3 px-3 rounded-2xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-950 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 disabled:opacity-40"
+                className="p-3 rounded-2xl border border-dashed border-orange-500 bg-orange-50/50 hover:bg-orange-100/50 text-orange-900 flex items-center justify-center gap-2 font-bold text-xs cursor-pointer min-h-[46px]"
               >
-                <Camera className="w-5 h-5 text-orange-600" />
-                <div className="text-left">
-                  <div className="text-xs font-extrabold">{lang === 'te' ? 'కెమెరాతో తీయండి' : 'Open Camera'}</div>
-                  <div className="text-[10px] text-orange-800/80">{lang === 'te' ? 'నేరుగా లైవ్ ఫోటో' : 'Take photo now'}</div>
-                </div>
+                <Camera className="w-4 h-4 text-orange-600" />
+                <span>{lang === 'te' ? 'కెమెరాతో తీయండి' : 'Take Photo'}</span>
               </button>
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleCameraCapture}
-                className="hidden"
-              />
-
-              {/* Gallery / File Picker */}
               <button
                 type="button"
-                onClick={() => galleryInputRef.current?.click()}
-                disabled={images.length >= 4}
-                className="py-3 px-3 rounded-2xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-900 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 disabled:opacity-40"
+                onClick={() => photoInputRef.current?.click()}
+                className="p-3 rounded-2xl border border-stone-300 hover:border-stone-400 bg-stone-50 text-stone-700 flex items-center justify-center gap-2 font-bold text-xs cursor-pointer min-h-[46px]"
               >
-                <ImageIcon className="w-5 h-5 text-stone-600" />
-                <div className="text-left">
-                  <div className="text-xs font-extrabold">{lang === 'te' ? 'గ్యాలరీ నుండి' : 'From Gallery'}</div>
-                  <div className="text-[10px] text-stone-500">{lang === 'te' ? 'ఫోన్ ఫైల్స్ ఎంచుకోండి' : 'Upload photos'}</div>
-                </div>
+                <ImageIcon className="w-4 h-4 text-stone-500" />
+                <span>{lang === 'te' ? 'గ్యాలరీ నుండి' : 'From Gallery'}</span>
               </button>
-              <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleGalleryUpload}
-                className="hidden"
-              />
-            </div>
-
-            {/* Photo Preview Slots (1 to 4) */}
-            <div className="grid grid-cols-4 gap-2 pt-1">
-              {[0, 1, 2, 3].map((idx) => {
-                const img = images[idx];
-                if (img) {
-                  return (
-                    <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-stone-200 shadow-xs">
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => removePhoto(idx)}
-                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center text-xs font-bold cursor-pointer hover:bg-red-600 transition-colors"
-                      >
-                        ✕
-                      </button>
-                      <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-md">
-                        #{idx + 1}
-                      </span>
-                    </div>
-                  );
-                }
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => cameraInputRef.current?.click()}
-                    className="aspect-square rounded-2xl border-2 border-dashed border-stone-200 hover:border-orange-400 bg-stone-50 flex flex-col items-center justify-center text-stone-400 hover:text-orange-600 cursor-pointer transition-colors p-1"
-                  >
-                    <Camera className="w-4 h-4 mb-0.5" />
-                    <span className="text-[10px] font-bold">ఫోటో #{idx + 1}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {isCompressing && (
-              <div className="text-xs text-orange-600 font-semibold flex items-center gap-1.5 animate-pulse">
-                <span>{lang === 'te' ? 'ఫోటో సైజు కుదించబడుతోంది (Compressing < 1MB)...' : 'Compressing image under 1MB...'}</span>
-              </div>
-            )}
-
-            {/* VIDEO SECTION: CAMERA VIDEO & UPLOAD */}
-            <div className="pt-3 border-t border-stone-100 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
-                  <Film className="w-4 h-4 text-orange-600" />
-                  <span>{lang === 'te' ? 'వీడియో క్లిప్ (30 సెకన్లు - ఐచ్ఛికం)' : 'Video Clip (Optional Tour)'}</span>
-                </label>
-                {videoPreview && (
-                  <button
-                    type="button"
-                    onClick={removeVideo}
-                    className="text-[11px] font-bold text-red-600 hover:underline cursor-pointer"
-                  >
-                    {lang === 'te' ? 'వీడియో తొలగించండి' : 'Remove Video'}
-                  </button>
-                )}
-              </div>
-
-              {/* Video Preview if Recorded/Uploaded */}
-              {videoPreview ? (
-                <div className="rounded-2xl overflow-hidden border border-stone-200 bg-black aspect-video relative">
-                  <video src={videoPreview} controls className="w-full h-full object-contain" />
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Record Video with Camera */}
-                  <button
-                    type="button"
-                    onClick={() => videoCameraInputRef.current?.click()}
-                    className="py-2.5 px-3 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
-                  >
-                    <Video className="w-4 h-4 text-orange-600" />
-                    <span className="text-xs font-bold">
-                      {lang === 'te' ? 'కెమెరా వీడియో రికార్డ్' : 'Record Video'}
-                    </span>
-                  </button>
-                  <input
-                    ref={videoCameraInputRef}
-                    type="file"
-                    accept="video/*"
-                    capture="environment"
-                    onChange={handleVideoFileChange}
-                    className="hidden"
-                  />
-
-                  {/* Upload Video File */}
-                  <button
-                    type="button"
-                    onClick={() => videoInputRef.current?.click()}
-                    className="py-2.5 px-3 rounded-2xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
-                  >
-                    <Film className="w-4 h-4 text-stone-600" />
-                    <span className="text-xs font-bold">
-                      {lang === 'te' ? 'వీడియో ఫైల్ అప్‌లోడ్' : 'Upload Clip'}
-                    </span>
-                  </button>
-                  <input
-                    ref={videoInputRef}
-                    type="file"
-                    accept="video/mp4,video/webm,video/quicktime"
-                    onChange={handleVideoFileChange}
-                    className="hidden"
-                  />
-                </div>
-              )}
-
-              {/* Video URL Alternative (YouTube / Shorts) */}
-              <div className="relative pt-1">
-                <input
-                  type="url"
-                  value={videoUrl.startsWith('data:video') ? '' : videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  placeholder={lang === 'te' ? 'లేదా యూట్యూబ్ / షార్ట్స్ లింక్ ఉంటే ఇక్కడ పేస్ట్ చేయండి' : 'Or paste YouTube / Shorts video link'}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs text-stone-800 placeholder:text-stone-400 focus:ring-2 focus:ring-orange-500/20"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* OPTIONAL ACCORDION: CATEGORY SPECIFIC SPECS */}
-          {currentCategoryObj.customFields.length > 0 && (
-            <div className="bg-white rounded-3xl p-4 border border-stone-200 shadow-xs">
-              <button
-                type="button"
-                onClick={() => setShowAdvancedSpecs(!showAdvancedSpecs)}
-                className="w-full flex items-center justify-between text-left cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-stone-500" />
-                  <span className="text-xs font-bold text-stone-800">
-                    {lang === 'te'
-                      ? `+ మరిన్ని ప్రత్యేక వివరాలు (${currentCategoryObj.nameTe}) - ఐచ్ఛికం`
-                      : `+ Additional Specs (${currentCategoryObj.nameEn}) - Optional`}
-                  </span>
-                </div>
-                {showAdvancedSpecs ? (
-                  <ChevronUp className="w-4 h-4 text-stone-500" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-stone-500" />
-                )}
-              </button>
-
-              {showAdvancedSpecs && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-stone-100 mt-3">
-                  {currentCategoryObj.customFields.map((field) => {
-                    const val = customFields[field.id] || '';
-
-                    if (field.type === 'select') {
-                      return (
-                        <div key={field.id} className="space-y-1">
-                          <label className="text-xs font-bold text-stone-700">
-                            {lang === 'te' ? field.labelTe : field.labelEn}
-                          </label>
-                          <select
-                            value={val}
-                            onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
-                            className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800 font-medium"
-                          >
-                            <option value="">{lang === 'te' ? '-- ఎంచుకోండి --' : '-- Select --'}</option>
-                            {field.options?.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {lang === 'te' ? opt.labelTe : opt.labelEn}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div key={field.id} className="space-y-1">
-                        <label className="text-xs font-bold text-stone-700">
-                          {lang === 'te' ? field.labelTe : field.labelEn}
-                        </label>
-                        <input
-                          type={field.type === 'number' ? 'number' : 'text'}
-                          value={val}
-                          onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
-                          placeholder={lang === 'te' ? field.placeholderTe : field.placeholderEn}
-                          className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs text-stone-800"
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           )}
 
-          {/* Submit Button */}
-          <div className="pt-2">
+          {compressing && (
+            <p className="text-xs text-orange-600 font-bold animate-pulse mb-2">
+              {lang === 'te' ? 'ఫోటో ఆప్టిమైజ్ చేయబడుతోంది (1000px)...' : 'Optimizing photo for fast mobile loading...'}
+            </p>
+          )}
+
+          {/* Previews */}
+          {images.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {images.map((imgUrl, idx) => (
+                <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-stone-200 group">
+                  <img src={imgUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(idx)}
+                    className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-red-600 transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Video Upload: Max 1 (30s / 20MB) */}
+        <div className="pt-2 border-t border-stone-100">
+          <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-1.5">
+            {lang === 'te' ? 'వీడియో (ఐచ్ఛికం, గరిష్టంగా 30 సెకన్లు / 20MB)' : 'Video (Optional, max 30s / 20MB)'}
+          </label>
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={handleVideoUpload}
+          />
+
+          {!videoUrl ? (
             <button
-              type="submit"
-              disabled={submitting || isCompressing || isVideoLoading}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-black text-sm tracking-wide shadow-lg shadow-orange-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              type="button"
+              onClick={() => videoInputRef.current?.click()}
+              className="w-full p-3 rounded-2xl border border-dashed border-stone-300 hover:border-blue-500 bg-stone-50 hover:bg-blue-50/40 text-stone-600 hover:text-blue-900 flex items-center justify-center gap-2 font-bold text-xs cursor-pointer min-h-[46px]"
             >
-              <CheckCircle className="w-5 h-5" />
-              <span>{submitting ? t.savingAd : t.postListingButton}</span>
+              <Video className="w-4 h-4 text-blue-600" />
+              <span>{lang === 'te' ? 'వీడియో అప్‌లోడ్ చేయండి' : 'Attach Video (max 20MB)'}</span>
             </button>
+          ) : (
+            <div className="flex items-center justify-between p-2.5 bg-blue-50 border border-blue-200 rounded-2xl">
+              <div className="flex items-center gap-2 min-w-0">
+                <Video className="w-4 h-4 text-blue-600 shrink-0" />
+                <span className="text-xs font-bold text-blue-950 truncate">{videoName || 'Attached Video'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={removeVideo}
+                className="text-stone-400 hover:text-red-600 p-1 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Phone Number (prefilled from profile) */}
+        <div className="pt-2 border-t border-stone-100">
+          <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-1.5">
+            {lang === 'te' ? 'సంప్రదించాల్సిన ఫోన్ నంబర్' : 'Contact Phone Number'} *
+          </label>
+          <div className="relative">
+            <Phone className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="tel"
+              value={sellerPhone}
+              onChange={(e) => setSellerPhone(e.target.value)}
+              placeholder={lang === 'te' ? 'ఉదా: 9876543210' : 'e.g. 9876543210'}
+              className="w-full bg-stone-50 border border-stone-300 rounded-xl pl-10 pr-3.5 py-3 text-sm font-bold text-stone-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 min-h-[46px]"
+            />
           </div>
-        </form>
-      </div>
+        </div>
+
+        {/* Review Summary Box */}
+        {(title || price) && (
+          <div className="pt-2 border-t border-stone-100">
+            <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200 text-xs space-y-1.5">
+              <div className="font-black text-stone-900 flex items-center justify-between">
+                <span className="truncate pr-2">{title || 'Ad Title'}</span>
+                {price && (
+                  <span className="text-orange-600 font-extrabold shrink-0">
+                    ₹{price} / {priceUnit}
+                  </span>
+                )}
+              </div>
+              <div className="text-stone-600 flex items-center gap-1.5 text-[11px]">
+                <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                <span className="truncate">
+                  {village === 'Other village' ? (otherVillageText || 'Other village') : village}, {mandal}, {district.split(' ')[0]}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Single Prominent Action Button: Review and Post Ad */}
+        <div className="pt-3">
+          <button
+            type="button"
+            disabled={submitting || compressing}
+            onClick={handleFinalSubmit}
+            className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-black text-base py-4 rounded-2xl shadow-xl shadow-orange-600/30 flex items-center justify-center gap-2 cursor-pointer min-h-[52px] active:scale-98 transition-all"
+          >
+            {submitting ? (
+              <span>{lang === 'te' ? 'ప్రకటన పోస్ట్ అవుతోంది...' : 'Publishing Your Listing...'}</span>
+            ) : (
+              <>
+                <CheckCircle2 className="w-5 h-5 fill-white text-orange-600" />
+                <span>{lang === 'te' ? 'సమీక్షించి ప్రకటనను పోస్ట్ చేయండి' : 'Review & Post Ad'}</span>
+              </>
+            )}
+          </button>
+          <p className="text-center text-[11px] text-stone-400 font-medium mt-2">
+            {lang === 'te'
+              ? 'ప్రకటన ఉచితంగా పోస్ట్ చేయబడుతుంది • ఎటువంటి రుసుము లేదు'
+              : 'Free to post • Andhra Pradesh rural & agri marketplace'}
+          </p>
+        </div>
+      </section>
     </div>
   );
 };

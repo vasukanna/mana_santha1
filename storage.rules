@@ -1,0 +1,34 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check auth
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Helper to check image type and max 5MB size
+    function isSafeImage() {
+      return request.resource.contentType.matches('image/.*')
+        && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Helper to check video type and max 20MB size
+    function isSafeVideo() {
+      return request.resource.contentType.matches('video/.*')
+        && request.resource.size < 20 * 1024 * 1024;
+    }
+
+    // Public read for listing media, authenticated upload only
+    match /listings/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == userId && (isSafeImage() || isSafeVideo());
+    }
+
+    // User profile avatars
+    match /avatars/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == userId && isSafeImage();
+    }
+  }
+}

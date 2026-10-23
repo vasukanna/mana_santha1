@@ -22,6 +22,7 @@ export const MyAdsScreen: React.FC = () => {
     loginWithGoogle,
     updateListingStatus,
     deleteListing,
+    renewListing,
     toggleFeatureListing,
     openListingDetail,
     setActiveTab,
@@ -188,11 +189,11 @@ export const MyAdsScreen: React.FC = () => {
 
                   {/* 1-Tap Management Action Bar */}
                   <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center justify-between gap-1.5 text-xs">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {!isSold ? (
                         <button
                           onClick={() => updateListingStatus(item.id, 'sold')}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold hover:bg-emerald-100 active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                          className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold hover:bg-emerald-100 active:scale-95 transition-all cursor-pointer flex items-center gap-1 min-h-[44px]"
                         >
                           <CheckCircle className="w-3.5 h-3.5" />
                           <span>{t.markAsSold}</span>
@@ -200,21 +201,31 @@ export const MyAdsScreen: React.FC = () => {
                       ) : (
                         <button
                           onClick={() => updateListingStatus(item.id, 'active')}
-                          className="px-3 py-1.5 rounded-xl bg-orange-50 text-orange-800 border border-orange-300 font-bold hover:bg-orange-100 active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                          className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold hover:bg-emerald-100 active:scale-95 transition-all cursor-pointer flex items-center gap-1 min-h-[44px]"
                         >
                           <RotateCw className="w-3.5 h-3.5" />
                           <span>{t.relistAd}</span>
                         </button>
                       )}
 
+                      {/* Renew 30 Days Button */}
+                      <button
+                        onClick={() => renewListing(item.id)}
+                        className="px-3 py-1.5 rounded-xl bg-stone-50 text-stone-800 border border-stone-300 font-bold hover:bg-emerald-50 hover:border-emerald-300 active:scale-95 transition-all cursor-pointer flex items-center gap-1 min-h-[44px]"
+                        title={lang === 'te' ? 'గడువును 30 రోజులకు పునరుద్ధరించండి' : 'Renew ad for 30 more days'}
+                      >
+                        <RotateCw className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>{lang === 'te' ? 'పునరుద్ధరించు (+30 రోజులు)' : 'Renew (+30d)'}</span>
+                      </button>
+
                       {/* Boost to Featured Button */}
                       {!item.featured && !isSold && (
                         <button
                           onClick={() => toggleFeatureListing(item.id, true)}
-                          className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 font-bold hover:bg-amber-100 active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                          className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 font-bold hover:bg-amber-100 active:scale-95 transition-all cursor-pointer flex items-center gap-1 min-h-[44px]"
                         >
                           <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                          <span>{lang === 'te' ? 'టాప్‌కి బూస్ట్ చేయండి (ఉచితం)' : 'Boost to Top (Free)'}</span>
+                          <span>{lang === 'te' ? 'బూస్ట్ (ఉచితం)' : 'Boost (Free)'}</span>
                         </button>
                       )}
                     </div>
@@ -226,7 +237,7 @@ export const MyAdsScreen: React.FC = () => {
                           deleteListing(item.id);
                         }
                       }}
-                      className="p-1.5 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                      className="p-2 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
                       title={t.deleteAd}
                     >
                       <Trash2 className="w-4 h-4" />

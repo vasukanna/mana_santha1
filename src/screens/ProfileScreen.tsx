@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { AP_DISTRICTS } from '../data/apLocations';
+import { APP_VERSION } from '../version';
 import {
   User,
   Phone,
@@ -23,7 +24,8 @@ import {
   Check,
   ChevronRight,
   TrendingUp,
-  Tag
+  Tag,
+  Download
 } from 'lucide-react';
 
 export const ProfileScreen: React.FC = () => {
@@ -205,6 +207,10 @@ export const ProfileScreen: React.FC = () => {
             <Sparkles className="w-4 h-4 text-orange-600" />
             <span>{lang === 'te' ? 'తక్షణ ప్రవేశం / డొమైన్ సహాయం (Quick Login / Help)' : 'Instant Quick Login / Domain Help'}</span>
           </button>
+
+          <div className="text-center text-xs text-stone-400 font-semibold pt-2">
+            Version {APP_VERSION}
+          </div>
         </div>
       </div>
     );
@@ -741,11 +747,12 @@ export const ProfileScreen: React.FC = () => {
                       setMandal(found.mandals[0].name);
                     }
                   }}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-semibold text-stone-900"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-semibold text-stone-900 notranslate"
+                  translate="no"
                 >
                   {AP_DISTRICTS.map((d) => (
-                    <option key={d.code} value={d.name}>
-                      {lang === 'te' ? d.te : d.name}
+                    <option key={d.code} value={d.name} translate="no" className="notranslate">
+                      {lang === 'te' ? `${d.name} (${d.te})` : d.name}
                     </option>
                   ))}
                 </select>
@@ -758,11 +765,12 @@ export const ProfileScreen: React.FC = () => {
                 <select
                   value={mandal}
                   onChange={(e) => setMandal(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-semibold text-stone-900"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl p-2.5 text-xs font-semibold text-stone-900 notranslate"
+                  translate="no"
                 >
                   {currentDistrictObj.mandals.map((m) => (
-                    <option key={m.name} value={m.name}>
-                      {lang === 'te' ? m.te : m.name}
+                    <option key={m.name} value={m.name} translate="no" className="notranslate">
+                      {lang === 'te' ? `${m.name} (${m.te})` : m.name}
                     </option>
                   ))}
                 </select>
@@ -850,10 +858,38 @@ export const ProfileScreen: React.FC = () => {
             </span>
           </button>
 
-          {/* Privacy & Terms */}
+          {/* Get the App / Download */}
+          <button
+            onClick={() => setActiveTab('download')}
+            className="w-full p-3 flex items-center justify-between hover:bg-emerald-50/50 rounded-2xl transition-colors cursor-pointer min-h-[44px]"
+          >
+            <div className="flex items-center gap-2.5">
+              <Download className="w-4 h-4 text-emerald-600" />
+              <span className="text-xs font-bold text-stone-800">
+                {lang === 'te' ? 'సంతలో యాప్‌ను డౌన్‌లోడ్ చేయండి' : 'Get the Santhalo App (Install / APK)'}
+              </span>
+            </div>
+            <span className="text-xs font-bold text-emerald-600">Free →</span>
+          </button>
+
+          {/* Privacy Policy for Google Play */}
+          <button
+            onClick={() => setActiveTab('privacy')}
+            className="w-full p-3 flex items-center justify-between hover:bg-stone-50 rounded-2xl transition-colors cursor-pointer min-h-[44px]"
+          >
+            <div className="flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span className="text-xs font-bold text-stone-800">
+                {lang === 'te' ? 'గోప్యతా విధానం (Privacy Policy)' : 'Privacy Policy (Google Play)'}
+              </span>
+            </div>
+            <span className="text-xs text-stone-400">→</span>
+          </button>
+
+          {/* Safety & Guidelines */}
           <button
             onClick={() => setActiveTab('safety_policy')}
-            className="w-full p-3 flex items-center justify-between hover:bg-stone-50 rounded-2xl transition-colors cursor-pointer"
+            className="w-full p-3 flex items-center justify-between hover:bg-stone-50 rounded-2xl transition-colors cursor-pointer min-h-[44px]"
           >
             <div className="flex items-center gap-2.5">
               <FileText className="w-4 h-4 text-stone-500" />
@@ -885,6 +921,11 @@ export const ProfileScreen: React.FC = () => {
             <Trash2 className="w-3.5 h-3.5 text-red-500" />
             <span>{t.deleteAccount}</span>
           </button>
+        </div>
+
+        {/* Current App Version */}
+        <div className="text-center text-xs text-stone-400 font-semibold pt-4 pb-2">
+          Version {APP_VERSION}
         </div>
       </div>
 
