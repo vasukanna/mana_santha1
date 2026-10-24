@@ -316,7 +316,7 @@ export const INITIAL_LISTINGS: Listing[] = [
     negotiable: true,
     quantity: "గంటకు ₹900",
     images: [
-      "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1758691790150-968f6a2b97ca?auto=format&fit=crop&w=1200&q=80"
     ],
     district: "Bapatla",
     mandal: "Bapatla",
