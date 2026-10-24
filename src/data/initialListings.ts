@@ -287,7 +287,7 @@ export const INITIAL_LISTINGS: Listing[] = [
     negotiable: false,
     quantity: "80 క్వింటాళ్లు",
     images: [
-      "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1616269533135-e051e983ceda?auto=format&fit=crop&w=1200&q=80"
     ],
     district: "Anantapur (Ananthapuramu)",
     mandal: "Tadipatri",
