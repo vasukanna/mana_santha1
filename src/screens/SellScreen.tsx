@@ -34,11 +34,10 @@ export const SellScreen: React.FC = () => {
     showToast
   } = useApp();
 
-  // Step 1: Select Category
+  // Step 1: Category & Title
   const [categoryId, setCategoryId] = useState<string>('cereals_grains');
   const [subcategoryId, setSubcategoryId] = useState<string>('paddy_rice');
   const [title, setTitle] = useState<string>('');
-  const [showAllCategories, setShowAllCategories] = useState<boolean>(false);
 
   // Step 2: Price, Quantity & Description
   const [price, setPrice] = useState<string>('');
@@ -93,8 +92,6 @@ export const SellScreen: React.FC = () => {
     return DEFAULT_CATEGORIES.find(c => c.id === categoryId) || DEFAULT_CATEGORIES[0];
   }, [categoryId]);
 
-  const visibleCategories = showAllCategories ? DEFAULT_CATEGORIES : DEFAULT_CATEGORIES.slice(0, 6);
-
   // When category changes, set first subcategory
   const handleCategorySelect = (id: string) => {
     setCategoryId(id);
@@ -119,18 +116,18 @@ export const SellScreen: React.FC = () => {
     return villagesList.filter(v => v.name.toLowerCase().includes(q) || v.te.includes(q));
   }, [villagesList, villageSearch]);
 
-  // Image upload & compress handler (~1000px width, max 5 photos)
+  // Image upload & compress handler (~1000px width, max 3 photos)
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    if (images.length >= 5) {
-      showToast(lang === 'te' ? 'గరిష్టంగా 5 ఫోటోలు మాత్రమే అనుమతించబడతాయి.' : 'Maximum 5 photos allowed.');
+    if (images.length >= 3) {
+      showToast(lang === 'te' ? 'గరిష్టంగా 3 ఫోటోలు మాత్రమే అనుమతించబడతాయి.' : 'Maximum 3 photos allowed.');
       return;
     }
 
     setCompressing(true);
-    const remainingSlots = 5 - images.length;
+    const remainingSlots = 3 - images.length;
     const filesToProcess = Array.from(files).slice(0, remainingSlots);
 
     try {
@@ -184,19 +181,19 @@ export const SellScreen: React.FC = () => {
   };
 
   // Step 1 status check
-  const isStep1Complete = Boolean(categoryId && subcategoryId);
+  const isStep1Complete = title.trim().length > 0 && title.length <= 60;
   // Step 2 status check
-  const isStep2Complete = title.trim().length > 0 && title.length <= 60 && Boolean(price && Number(price) > 0);
+  const isStep2Complete = Boolean(price && Number(price) > 0);
   // Step 3 status check
   const isStep3Complete = Boolean(district && mandal && (village !== 'Other village' || otherVillageText.trim()));
   // Step 4 status check
-  const isStep4Complete = Boolean((sellerPhone.trim() || userProfile?.phone) && images.length > 0);
+  const isStep4Complete = Boolean(sellerPhone.trim() || userProfile?.phone);
 
   // Submit Listing with safe defaults and undefined protection
   const handleFinalSubmit = async () => {
     if (!title.trim()) {
-      showToast(lang === 'te' ? 'దయచేసి దశ 2లో ప్రకటన శీర్షిక రాయండి.' : 'Please enter an ad title in Step 2.');
-      document.getElementById('step-2')?.scrollIntoView({ behavior: 'smooth' });
+      showToast(lang === 'te' ? 'దయచేసి దశ 1లో ప్రకటన శీర్షిక రాయండి.' : 'Please enter an ad title in Step 1.');
+      document.getElementById('step-1')?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
     if (title.length > 60) {
@@ -271,7 +268,7 @@ export const SellScreen: React.FC = () => {
     <div className="pb-36 pt-2 px-3 sm:px-4 max-w-2xl mx-auto space-y-4">
       {/* 
         HEADER CARD:
-        Logo + "Sell or Buy with SanthaLO" sentence 
+        Logo + "One Santha. Endless Connections" sentence 
       */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-950 rounded-3xl p-5 text-white shadow-xl border border-blue-700/50 relative overflow-hidden">
         <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-orange-500/20 rounded-full blur-2xl pointer-events-none" />
@@ -295,12 +292,12 @@ export const SellScreen: React.FC = () => {
                 {lang === 'te' ? 'ఒకే పేజీలో 4 దశలు' : 'All 4 Steps on Single Page'}
               </div>
               <h1 className="text-lg sm:text-xl font-black text-white tracking-tight leading-snug">
-                Sell or Buy with SanthaLO
+                One Santha. Endless Connections
               </h1>
               <p className="text-xs text-blue-200 font-medium">
                 {lang === 'te'
-                  ? 'సంతలో అమ్మండి లేదా కొనండి • మీ ప్రకటనను సులభంగా పోస్ట్ చేయండి'
-                  : 'Your trusted local agricultural marketplace'}
+                  ? 'ఒకే సంత. అనంత అనుసంధానాలు • మీ ప్రకటనను సులభంగా పోస్ట్ చేయండి'
+                  : 'Direct rural & agri marketplace for Andhra Pradesh'}
               </p>
             </div>
           </div>
@@ -312,31 +309,13 @@ export const SellScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Platform trust highlights */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
-          {[
-            { en: 'Safe & Trusted', te: 'సురక్షితం & నమ్మకం', icon: CheckCircle2 },
-            { en: 'Local Community', te: 'స్థానిక సమాజం', icon: MapPin },
-            { en: 'Quick Posting', te: 'త్వరగా పోస్ట్ చేయండి', icon: Clock },
-            { en: 'No Commission', te: 'కమీషన్ లేదు', icon: IndianRupee },
-          ].map((item) => {
-            const TrustIcon = item.icon;
-            return (
-              <div key={item.en} className="flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-2.5 py-2 text-[10px] sm:text-xs font-bold text-white">
-                <TrustIcon className="w-3.5 h-3.5 text-orange-300 shrink-0" />
-                <span>{lang === 'te' ? item.te : item.en}</span>
-              </div>
-            );
-          })}
-        </div>
-
         {/* 4-Step Visual Progress Bar */}
         <div className="grid grid-cols-4 gap-2 pt-4 mt-3 border-t border-blue-700/60">
           {[
-            { num: 1, titleEn: 'Category', titleTe: 'కేటగిరీ', done: Boolean(categoryId && subcategoryId) },
-            { num: 2, titleEn: 'Details', titleTe: 'వివరాలు', done: isStep2Complete && isStep1Complete },
+            { num: 1, titleEn: 'Category', titleTe: 'కేటగిరీ', done: isStep1Complete },
+            { num: 2, titleEn: 'Price', titleTe: 'ధర', done: isStep2Complete },
             { num: 3, titleEn: 'Location', titleTe: 'ప్రాంతం', done: isStep3Complete },
-            { num: 4, titleEn: 'Media', titleTe: 'మీడియా', done: isStep4Complete || images.length > 0 },
+            { num: 4, titleEn: 'Media', titleTe: 'మీడియా', done: isStep4Complete },
           ].map((s) => (
             <div key={s.num} className="space-y-1">
               <div className="flex items-center gap-1.5 justify-center">
@@ -368,10 +347,10 @@ export const SellScreen: React.FC = () => {
             </span>
             <div>
               <h2 className="text-sm font-black text-stone-900 uppercase tracking-tight">
-                {lang === 'te' ? 'దశ 1: కేటగిరీ ఎంచుకోండి' : 'Step 1: Select Category'}
+                {lang === 'te' ? 'దశ 1: కేటగిరీ & శీర్షిక' : 'Step 1: Category & Title'}
               </h2>
               <p className="text-[11px] text-stone-500">
-                {lang === 'te' ? 'మీ ఉత్పత్తికి సరిపోయే కేటగిరీని ఎంచుకోండి' : 'Choose the category that best matches your product'}
+                {lang === 'te' ? 'మీరు విక్రయించాలనుకుంటున్న వర్గం ఎంచుకోండి' : 'Choose fixed category and name your product'}
               </p>
             </div>
           </div>
@@ -389,7 +368,7 @@ export const SellScreen: React.FC = () => {
             {lang === 'te' ? 'ప్రధాన కేటగిరీని ఎంచుకోండి' : 'Select Category'} *
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1">
-            {visibleCategories.map((cat) => {
+            {DEFAULT_CATEGORIES.map((cat) => {
               const isSelected = categoryId === cat.id;
               return (
                 <button
@@ -414,17 +393,6 @@ export const SellScreen: React.FC = () => {
               );
             })}
           </div>
-          {DEFAULT_CATEGORIES.length > 6 && (
-            <button
-              type="button"
-              onClick={() => setShowAllCategories((value) => !value)}
-              className="mt-2 text-xs font-bold text-blue-800 hover:text-blue-950 underline underline-offset-2"
-            >
-              {showAllCategories
-                ? (lang === 'te' ? 'తక్కువ చూపించు' : 'Show less')
-                : (lang === 'te' ? 'అన్నీ చూడండి' : 'View all categories')}
-            </button>
-          )}
         </div>
 
         {/* Sub-category selector */}
@@ -453,32 +421,6 @@ export const SellScreen: React.FC = () => {
           </div>
         </div>
 
-      </section>
-
-      {/* STEP 2: PRICE, QUANTITY & DESCRIPTION */}
-      <section id="step-2" className="bg-white rounded-3xl p-5 border border-stone-200/90 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-          <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-xl bg-orange-100 text-orange-900 font-black text-sm flex items-center justify-center">
-              2
-            </span>
-            <div>
-              <h2 className="text-sm font-black text-stone-900 uppercase tracking-tight">
-                {lang === 'te' ? 'దశ 2: ఉత్పత్తి వివరాలు' : 'Step 2: Product Details'}
-              </h2>
-              <p className="text-[11px] text-stone-500">
-                {lang === 'te' ? 'అంచనా ధర మరియు అందుబాటులో ఉన్న వివరాలు' : 'Add title, description, quantity and price'}
-              </p>
-            </div>
-          </div>
-          {isStep2Complete && (
-            <span className="flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
-              <Check className="w-3.5 h-3.5" />
-              <span>{lang === 'te' ? 'పూర్తయింది' : 'Ready'}</span>
-            </span>
-          )}
-        </div>
-
         {/* Ad Title */}
         <div className="pt-2 border-t border-stone-100">
           <div className="flex items-center justify-between mb-1.5">
@@ -500,10 +442,35 @@ export const SellScreen: React.FC = () => {
           <p className="text-[11px] text-stone-500 mt-1">
             {lang === 'te'
               ? 'కేటగిరీ ముందుగానే నిర్ణయించబడింది. మీరు కేవలం మీ పంట లేదా వస్తువు పేరు రాయండి.'
-              : 'Enter a clear product name so buyers can find your ad.'}
+              : 'Category is pre-selected. You only need to type the specific item name.'}
           </p>
         </div>
-        
+      </section>
+
+      {/* STEP 2: PRICE, QUANTITY & DESCRIPTION */}
+      <section id="step-2" className="bg-white rounded-3xl p-5 border border-stone-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+          <div className="flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-xl bg-orange-100 text-orange-900 font-black text-sm flex items-center justify-center">
+              2
+            </span>
+            <div>
+              <h2 className="text-sm font-black text-stone-900 uppercase tracking-tight">
+                {lang === 'te' ? 'దశ 2: ధర & పరిమాణం' : 'Step 2: Price & Quantity'}
+              </h2>
+              <p className="text-[11px] text-stone-500">
+                {lang === 'te' ? 'అంచనా ధర మరియు అందుబాటులో ఉన్న వివరాలు' : 'Enter unit price, available quantity and details'}
+              </p>
+            </div>
+          </div>
+          {isStep2Complete && (
+            <span className="flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+              <Check className="w-3.5 h-3.5" />
+              <span>{lang === 'te' ? 'పూర్తయింది' : 'Ready'}</span>
+            </span>
+          )}
+        </div>
+
         {/* Price & Unit */}
         <div>
           <label className="block text-xs font-black text-stone-800 uppercase tracking-wider mb-1.5">
@@ -582,15 +549,15 @@ export const SellScreen: React.FC = () => {
         <div className="pt-2 border-t border-stone-100">
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-xs font-black text-stone-800 uppercase tracking-wider">
-              {lang === 'te' ? 'వివరాలు (ఐచ్ఛికం - గరిష్టంగా 500 అక్షరాలు)' : 'Description (Optional, max 500)'}
+              {lang === 'te' ? 'సంక్షిప్త వివరాలు (ఐచ్ఛికం - గరిష్టంగా 300 అక్షరాలు)' : 'Short Description (Optional, max 300)'}
             </label>
-            <span className={`text-[11px] font-bold ${description.length > 480 ? 'text-orange-600' : 'text-stone-400'}`}>
-              {description.length}/500
+            <span className={`text-[11px] font-bold ${description.length > 280 ? 'text-orange-600' : 'text-stone-400'}`}>
+              {description.length}/300
             </span>
           </div>
           <textarea
             value={description}
-            maxLength={500}
+            maxLength={300}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
             placeholder={lang === 'te' ? 'నాణ్యత, వయస్సు లేదా ఇతర ముఖ్యమైన వివరాలు రాయండి...' : 'Mention quality, age, condition, or harvest date...'}
@@ -716,7 +683,7 @@ export const SellScreen: React.FC = () => {
         </div>
       </section>
 
-      {/* STEP 4: MEDIA (UP TO 5 PHOTOS + 1 VIDEO), PHONE & REVIEW */}
+      {/* STEP 4: MEDIA (3 PHOTOS + 1 VIDEO), PHONE & REVIEW */}
       <section id="step-4" className="bg-white rounded-3xl p-5 border border-stone-200/90 shadow-xs space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-stone-100">
           <div className="flex items-center gap-2.5">
@@ -725,10 +692,10 @@ export const SellScreen: React.FC = () => {
             </span>
             <div>
               <h2 className="text-sm font-black text-stone-900 uppercase tracking-tight">
-                {lang === 'te' ? 'దశ 4: ఫోటోలు & ఫోన్ నంబర్' : 'Step 4: Photos & Review'}
+                {lang === 'te' ? 'దశ 4: ఫోటోలు & ఫోన్ నంబర్' : 'Step 4: Media & Contact'}
               </h2>
               <p className="text-[11px] text-stone-500">
-                {lang === 'te' ? 'ఫోటోలు, చిన్న వీడియో మరియు సంప్రదింపు నంబర్' : 'Upload up to 5 photos, video and verify phone'}
+                {lang === 'te' ? 'ఫోటోలు, చిన్న వీడియో మరియు సంప్రదింపు నంబర్' : 'Upload photos (max 3), video and verify phone'}
               </p>
             </div>
           </div>
@@ -744,10 +711,10 @@ export const SellScreen: React.FC = () => {
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-xs font-black text-stone-800 uppercase tracking-wider">
-              {lang === 'te' ? 'ఫోటోలు (గరిష్టంగా 5)' : 'Photos (Maximum 5)'}
+              {lang === 'te' ? 'ఫోటోలు (గరిష్టంగా 3)' : 'Photos (Maximum 3)'}
             </label>
             <span className="text-[11px] font-bold text-stone-500">
-              {images.length}/5 {lang === 'te' ? 'ఫోటోలు' : 'photos'}
+              {images.length}/3 {lang === 'te' ? 'ఫోటోలు' : 'photos'}
             </span>
           </div>
 
@@ -769,7 +736,7 @@ export const SellScreen: React.FC = () => {
           />
 
           {/* Upload Buttons */}
-          {images.length < 5 && (
+          {images.length < 3 && (
             <div className="grid grid-cols-2 gap-2 mb-3">
               <button
                 type="button"
@@ -871,30 +838,6 @@ export const SellScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Checklist */}
-        <div className="pt-3 border-t border-stone-100">
-          <h3 className="text-xs font-black uppercase tracking-wider text-stone-800 mb-2">
-            {lang === 'te' ? 'త్వరిత తనిఖీ జాబితా' : 'Quick Checklist'}
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {[
-              { labelEn: 'Category selected', labelTe: 'కేటగిరీ ఎంచుకున్నారు', done: Boolean(categoryId && subcategoryId) },
-              { labelEn: 'Ad title added', labelTe: 'ప్రకటన శీర్షిక జోడించారు', done: Boolean(title.trim() && title.length <= 60) },
-              { labelEn: 'Price entered', labelTe: 'ధర నమోదు చేశారు', done: Boolean(price && Number(price) > 0) },
-              { labelEn: 'Location selected', labelTe: 'ప్రాంతం ఎంచుకున్నారు', done: Boolean(district && mandal && (village !== 'Other village' || otherVillageText.trim())) },
-              { labelEn: 'Contact number added', labelTe: 'ఫోన్ నంబర్ జోడించారు', done: Boolean(sellerPhone.trim() || userProfile?.phone) },
-              { labelEn: 'Photos added (optional)', labelTe: 'ఫోటోలు జోడించారు (ఐచ్ఛికం)', done: images.length > 0 },
-            ].map((item) => (
-              <div key={item.labelEn} className="flex items-center gap-2 text-xs">
-                <CheckCircle2 className={`w-4 h-4 shrink-0 ${item.done ? 'text-emerald-600' : 'text-stone-300'}`} />
-                <span className={item.done ? 'text-stone-800 font-semibold' : 'text-stone-500'}>
-                  {lang === 'te' ? item.labelTe : item.labelEn}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Review Summary Box */}
         {(title || price) && (
           <div className="pt-2 border-t border-stone-100">
@@ -917,42 +860,30 @@ export const SellScreen: React.FC = () => {
           </div>
         )}
 
-        {/* Submission guidance; action buttons are in the sticky bottom bar */}
-        <p className="text-center text-[11px] text-stone-500 font-medium pt-3 border-t border-stone-100">
-          {lang === 'te'
-            ? 'మీ ప్రకటన ప్రచురణకు ముందు ధృవీకరించబడుతుంది. ఉచితంగా పోస్ట్ చేయండి • ఎటువంటి కమీషన్ లేదు.'
-            : 'Your ad may be reviewed before publishing. Free to post • No commission.'}
-        </p>
-      </section>
-
-      {/* Sticky bottom action bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-stone-200 bg-white/95 backdrop-blur-md px-3 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)]">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setActiveTab('home')}
-            disabled={submitting}
-            className="shrink-0 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-bold text-stone-700 hover:bg-stone-50 disabled:opacity-50 min-h-[48px]"
-          >
-            {lang === 'te' ? 'వెనక్కి' : 'Back'}
-          </button>
+        {/* Single Prominent Action Button: Review and Post Ad */}
+        <div className="pt-3">
           <button
             type="button"
             disabled={submitting || compressing}
             onClick={handleFinalSubmit}
-            className="flex-1 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-black text-base py-3 rounded-xl shadow-lg shadow-orange-600/20 flex items-center justify-center gap-2 min-h-[48px]"
+            className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-black text-base py-4 rounded-2xl shadow-xl shadow-orange-600/30 flex items-center justify-center gap-2 cursor-pointer min-h-[52px] active:scale-98 transition-all"
           >
             {submitting ? (
-              <span>{lang === 'te' ? 'ప్రకటన పోస్ట్ అవుతోంది...' : 'Posting Ad...'}</span>
+              <span>{lang === 'te' ? 'ప్రకటన పోస్ట్ అవుతోంది...' : 'Publishing Your Listing...'}</span>
             ) : (
               <>
-                <CheckCircle2 className="w-5 h-5" />
-                <span>{lang === 'te' ? 'ప్రకటన పోస్ట్ చేయండి' : 'Post Ad'}</span>
+                <CheckCircle2 className="w-5 h-5 fill-white text-orange-600" />
+                <span>{lang === 'te' ? 'సమీక్షించి ప్రకటనను పోస్ట్ చేయండి' : 'Review & Post Ad'}</span>
               </>
             )}
           </button>
+          <p className="text-center text-[11px] text-stone-400 font-medium mt-2">
+            {lang === 'te'
+              ? 'ప్రకటన ఉచితంగా పోస్ట్ చేయబడుతుంది • ఎటువంటి రుసుము లేదు'
+              : 'Free to post • Andhra Pradesh rural & agri marketplace'}
+          </p>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
